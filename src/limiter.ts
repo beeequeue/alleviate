@@ -100,18 +100,18 @@ export function createLimiter(opts: LimiterOptions = {}): Limiter {
 		advance()
 	}
 
-	const run: Limiter["run"] = async (fn) => {
+	const run: Limiter["run"] = (fn) => {
 		const { promise, resolve, reject } = Promise.withResolvers<ReturnType<typeof fn>>()
 
 		queue.push({ fn, resolve, reject })
 
 		advance()
 
-		return promise
+		return promise as ReturnType<typeof fn>
 	}
 
 	const wrap: Limiter["wrap"] =
-		async (fn) =>
+		(fn) =>
 		// @ts-expect-error: types aren't good enough to handle it
 		async (...args: any[]) =>
 			run(() => fn(...args))

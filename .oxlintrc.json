@@ -32,7 +32,7 @@
 		"nursery": "warn"
 	},
 	"rules": {
-		"import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+		"import/consistent-type-specifier-style": ["error", "prefer-inline"],
 		"typescript/consistent-type-imports": [
 			"error",
 			{ "fixStyle": "inline-type-imports", "disallowTypeAnnotations": false }
@@ -44,8 +44,6 @@
 		"typescript/no-redundant-type-constituents": "off",
 		"typescript/no-unsafe-type-assertion": "off",
 		"typescript/no-unnecessary-type-parameters": "off",
-
-		"typescript/prefer-readonly-parameter-types": "warn",
 
 		"e18e/ban-dependencies": "error",
 		"e18e/prefer-array-at": "error",

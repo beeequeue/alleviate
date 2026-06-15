@@ -71,25 +71,18 @@ export function createLimiter(opts: LimiterOptions = {}): Limiter {
 		}, refillInterval) as unknown as number
 	}
 
-	let isQueued = false
 	function advance() {
-		if (isQueued) return
+		if (interval == null) {
+			initRefillInterval()
+		}
 
-		queueMicrotask(() => {
-			if (interval == null) {
-				initRefillInterval()
-			}
+		while (queue.length !== 0 && pool > 0 && active < concurrency) {
+			pool--
+			active++
+			void executeQueueFn()
+		}
 
-			while (queue.length !== 0 && pool > 0 && active < concurrency) {
-				pool--
-				active++
-				void executeQueueFn()
-			}
-
-			updateState()
-			isQueued = false
-		})
-		isQueued = true
+		updateState()
 	}
 
 	async function executeQueueFn() {

@@ -47,7 +47,7 @@ describe("Limiter", () => {
 					expect(spies[j], `not called ${i} ${j}`).not.toHaveBeenCalledOnce()
 				}
 
-				vi.advanceTimersByTime(200)
+				await vi.advanceTimersByTimeAsync(200)
 				await Promise.resolve()
 			}
 			// oxlint-enable no-await-in-loop
@@ -69,16 +69,14 @@ describe("Limiter", () => {
 				expect(spies[i]).toHaveBeenCalledOnce()
 			}
 
-			vi.advanceTimersToNextTimer()
-			await Promise.resolve()
+			await vi.advanceTimersToNextTimerAsync()
 			expect(limiter.state).toEqual("running")
 
 			for (let i = 8; i < 10; i++) {
 				expect(spies[i]).toHaveBeenCalledOnce()
 			}
 
-			vi.advanceTimersToNextTimer()
-			await Promise.resolve()
+			await vi.advanceTimersToNextTimerAsync()
 
 			expect(limiter.queue).toEqual(0)
 			expect(limiter.state).toEqual("idle")

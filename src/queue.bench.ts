@@ -2,7 +2,7 @@ import PQueue from "p-queue"
 // oxlint-disable vitest/expect-expect
 import { it } from "vitest"
 
-import { createLimiter } from "./limiter.ts"
+import { createLimiter } from "./promise/limiter.ts"
 
 const generateValue = () => Math.random() * 10_000
 

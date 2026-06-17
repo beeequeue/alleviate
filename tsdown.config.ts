@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown"
 
 export default defineConfig({
-	entry: ["src/index.ts", "src/cache/lru.ts"],
+	entry: ["src/index.ts", "src/cache/lru.ts", "src/promise/limiter.ts"],
 	outDir: "dist",
 	exports: true,
 	fixedExtension: true,

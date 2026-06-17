@@ -45,7 +45,7 @@ import { createLimiter } from "alleviate"
 
 // Defaults
 const limiter = createLimiter({
-	concurrency: 4, // How many promises can be running at once
+	concurrency: 4, // How many promises can be running at once (defaults to 3/4ths of available threads)
 	pool: 4, // Max number of calls before blocking (defaults to `concurrency`)
 	initial: 16, // How much the pool starts with (defaults to `pool`)
 	refill: 60, // How much the pool increases per `refillInterval` (defaults to `pool`)

@@ -59,11 +59,10 @@ type LimiterOptions = {
 	timeout?: number
 }
 
-// TODO: default concurrency
 export function createLimiter<Options extends LimiterOptions>(
 	opts: Options = {} as never,
 ): Limiter<Options["timeout"] extends number ? true : false> {
-	let concurrency = opts.concurrency ?? 4
+	let concurrency = opts.concurrency ?? Math.round(navigator.hardwareConcurrency / 1.5)
 	let limit = opts.pool ?? concurrency
 	let pool = opts.initial ?? limit
 	let active = 0

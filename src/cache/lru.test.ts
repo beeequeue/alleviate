@@ -1,6 +1,13 @@
+// oxlint-disable vitest/expect-expect
 import { describe, expect, it } from "vitest"
 
-import { createLRU } from "./lru.ts"
+import { createLRU, type LRU } from "./lru.ts"
+
+function keysExist(lru: LRU<string, unknown>, keys: string[], expected = true): void {
+	for (const key of keys) {
+		expect(lru.has(key), `${key} exists`).toBe(expected)
+	}
+}
 
 describe("createMapLru", () => {
 	describe(".get()", () => {
@@ -24,20 +31,105 @@ describe("createMapLru", () => {
 			}
 
 			// 3 fresh, 3 stale
-			for (let i = 0; i < 6; i++) {
-				expect(lru.has(i.toString())).toBe(true)
-			}
+			keysExist(lru, ["0", "1", "2", "3", "4", "5"])
 
 			lru.set("7", "7")
 			expect(lru.has("7")).toBe(true)
 			// 3 stale entries have been evicted
-			expect(lru.has("0")).toBe(false)
-			expect(lru.has("1")).toBe(false)
-			expect(lru.has("2")).toBe(false)
+			keysExist(lru, ["0", "1", "2"], false)
 			// 3 new stale entries
-			expect(lru.has("3")).toBe(true)
-			expect(lru.has("4")).toBe(true)
-			expect(lru.has("5")).toBe(true)
+			keysExist(lru, ["3", "4", "5"])
+		})
+
+		it("does not allow prototype pollution", () => {
+			const lru = createLRU<string, unknown>({ max: 25 })
+
+			// Attempt to pollute via the classic prototype-pollution keys.
+			const dangerousKeys = ["__proto__", "constructor", "prototype"]
+
+			for (const key of dangerousKeys) {
+				lru.set(key, { polluted: true })
+			}
+
+			expect(({} as any).polluted).toBeUndefined()
+			expect((Object.prototype as any).polluted).toBeUndefined()
+
+			expect(lru.get("__proto__")).toEqual({ polluted: true })
+			expect(lru.has("constructor")).toBe(true)
+			expect(lru.peek("prototype")).toEqual({ polluted: true })
+
+			const obj: Record<string, unknown> = {}
+			expect(obj.polluted).toBeUndefined()
+			expect(obj.constructor).toBe(Object)
+		})
+	})
+
+	describe(".setMany()", () => {
+		it("sets from tuples array", () => {
+			const lru = createLRU({ max: 5 })
+			lru.setMany([
+				["0", "0"],
+				["1", "1"],
+				["2", "2"],
+				["3", "3"],
+				["4", "4"],
+				["5", "5"],
+			])
+
+			// 3 fresh, 3 stale
+			keysExist(lru, ["0", "1", "2", "3", "4", "5"])
+		})
+
+		it("sets from object array", () => {
+			const lru = createLRU({ max: 5 })
+			lru.setMany({
+				0: "0",
+				1: "1",
+				2: "2",
+				3: "3",
+				4: "4",
+				5: "5",
+			})
+
+			// 3 fresh, 3 stale
+			keysExist(lru, ["0", "1", "2", "3", "4", "5"])
+		})
+
+		it("evicts old values", () => {
+			const lru = createLRU({ max: 3 })
+			lru.setMany([
+				["0", "0"],
+				["1", "1"],
+				["2", "2"],
+				["3", "3"],
+				["4", "4"],
+				["5", "5"],
+			])
+
+			keysExist(lru, ["0", "1", "2", "3", "4", "5"])
+
+			lru.setMany([
+				["6", "6"],
+				["7", "7"],
+				["8", "8"],
+			])
+
+			keysExist(lru, ["3", "4", "5", "6", "7", "8"])
+			keysExist(lru, ["0", "1", "2"], false)
+		})
+
+		it("does not allow prototype pollution", () => {
+			const lru = createLRU({ max: 25 })
+
+			lru.setMany([
+				["__proto__", { viaIterable: true }],
+				["constructor", { viaIterable: true }],
+			])
+			expect(({} as any).viaIterable).toBeUndefined()
+
+			lru.setMany(JSON.parse('{"__proto__": {"viaObject": true}}'))
+			expect(({} as any).viaObject).toBeUndefined()
+			expect((Object.prototype as any).viaObject).toBeUndefined()
 		})
 	})
 
@@ -46,13 +138,9 @@ describe("createMapLru", () => {
 		const keys = ["a", "b", "c"]
 		keys.forEach((key, i) => lru.set(key, i))
 
-		for (const key of keys) {
-			expect(lru.has(key)).toBe(true)
-		}
+		keysExist(lru, keys)
 
 		lru.clear()
-		for (const key of keys) {
-			expect(lru.has(key)).toBe(false)
-		}
+		keysExist(lru, keys, false)
 	})
 })

@@ -18,16 +18,55 @@ An ever so slightly modified version of [flru](https://github.com/lukeed/flru) b
 ```ts
 import { createLRU } from "alleviate"
 
+/* -- API -- */
+
 const lru = createLRU({ max: 3 })
+
+lru.set("foo", "bar")
+lru.has("foo") // true
+lru.get("foo") // "bar", marks "foo" as most recently used
+lru.peek("foo") // "bar", does not affect LRU order
+
+lru.setMany({
+	biz: "baz",
+	lorem: "ipsum",
+})
+lru.setMany([
+	["0", "0"],
+	["1", "1"],
+	["2", "3"],
+])
+
+lru.clear()
+
+/* -- How it works -- */
 
 // set fresh values
 lru.set("1", "foo")
 lru.set("2", "bar")
 lru.set("3", "biz")
 
+// 1, 2, 3 are now cached
 lru.get("1") // "foo"
 
-//
+// set 3 more.
+lru.setMany({
+	4: "4",
+	5: "5",
+	6: "6",
+})
+
+// 4, 5, 6 are now cached, 1, 2, 3 are still available but stale
+lru.get("3") // "biz"
+lru.get("6") // "6"
+
+// set 1 more.
+lru.set("7", "7")
+
+// 7 is now cached. 4, 5, 6, are stale. 1, 2, 3 have been evicted.
+lru.has("6") // true
+lru.has("7") // true
+lru.has("4") // false
 ```
 
 ### Limiter
@@ -46,13 +85,12 @@ const limiter = new Limiter({
 	timeout: null, // How long to wait in ms for a call to resolve before rejecting
 })
 
-/* -- Further examples -- */
+/* -- Examples -- */
 
 // 60 requests per minute
 const limiter = new Limiter({
 	concurrency: 16,
 	pool: 60,
-	refillInterval: 1000, // (default)
 })
 
 // 60 requests per minute, more spread out
@@ -61,7 +99,7 @@ const limiter = new Limiter({
 	pool: 60,
 	initial: 16,
 	refill: 10,
-	refillInterval: 10_000, // (default)
+	refillInterval: 10_000,
 })
 ```
 

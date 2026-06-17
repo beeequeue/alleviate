@@ -4,5 +4,5 @@
 	"initialVersions": {
 		"alleviate": "0.0.0-alpha.0"
 	},
-	"changesets": ["seven-grapes-wonder"]
+	"changesets": ["seven-grapes-wonder", "tame-suits-listen"]
 }

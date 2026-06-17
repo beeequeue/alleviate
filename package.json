@@ -1,7 +1,7 @@
 {
 	"name": "alleviate",
 	"type": "module",
-	"version": "0.0.0-alpha.1",
+	"version": "0.0.0-alpha.2",
 	"author": "BeeeQueue <adam@haglund.dev>",
 	"license": "MIT",
 	"packageManager": "pnpm@11.7.0",

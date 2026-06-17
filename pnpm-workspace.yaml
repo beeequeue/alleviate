@@ -6,6 +6,7 @@ dedupePeerDependents: true
 
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
+  - "@changesets/*"
   - "@vitest/mocker@5.0.0-beta.5"
   - "@vitest/pretty-format@5.0.0-beta.5"
   - "@vitest/spy@5.0.0-beta.5"

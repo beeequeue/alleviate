@@ -14,12 +14,31 @@ type QueueItem = {
 	reject: (error: unknown) => void
 }
 
-type Limiter = {
+type Limiter<Timeout = false> = {
 	readonly state: LimiterStatus
 	readonly pool: number
 	readonly queue: number
 
-	readonly run: <Fn extends GenericFn>(fn: Fn) => ReturnType<Fn>
+	/**
+	 * Add a function to the queue to be executed as soon as possible.
+	 *
+	 * @param fn The function to run. An `AbortSignal` is be passed to the function if `timeout` is set.
+	 *
+	 * @example
+	 * ```ts
+	 * const result = await limiter.run(() => fetch("https://example.com"))
+	 * ```
+	 *
+	 * @example
+	 * With timeout and `AbortSignal`
+	 * ```ts
+	 * const limiter = createLimiter({ timeout: 1000 })
+	 * const result = await limiter.run((signal) => fetch("https://example.com", { signal }))
+	 * ```
+	 */
+	readonly run: <Return>(
+		fn: (...args: Timeout extends true ? [AbortSignal] : []) => Promise<Return>,
+	) => Promise<Return>
 	readonly wrap: <Fn extends GenericFn>(fn: Fn) => (...args: Parameters<Fn>) => ReturnType<Fn>
 }
 
@@ -41,7 +60,9 @@ type LimiterOptions = {
 }
 
 // TODO: default concurrency
-export function createLimiter(opts: LimiterOptions = {}): Limiter {
+export function createLimiter<Options extends LimiterOptions>(
+	opts: Options = {} as never,
+): Limiter<Options["timeout"] extends number ? true : false> {
 	let concurrency = opts.concurrency ?? 4
 	let limit = opts.pool ?? concurrency
 	let pool = opts.initial ?? limit
@@ -87,12 +108,16 @@ export function createLimiter(opts: LimiterOptions = {}): Limiter {
 
 	async function executeQueueFn() {
 		const { fn, resolve, reject } = queue.shift()!
+		const controller = opts.timeout != null ? new AbortController() : undefined
 
 		try {
 			const promise =
-				opts.timeout != null ? Promise.race([fn(), timeoutPromise(opts.timeout)]) : fn()
+				opts.timeout != null
+					? Promise.race([fn(controller!.signal), timeoutPromise(opts.timeout)])
+					: fn()
 			resolve(await promise)
 		} catch (error) {
+			if (controller != null) controller.abort()
 			reject(error)
 		}
 

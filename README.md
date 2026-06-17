@@ -1,10 +1,8 @@
 # alleviate
 
-<!--
-[![npm](https://img.shields.io/npm/v/alleviate)](https://www.npmjs.com/package/alleviate)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/alleviate)
-![node-current](https://img.shields.io/node/v/alleviate)
--->
+[![Open on npmx.dev](https://npmx.dev/api/registry/badge/version/alleviate)](https://npmx.dev/package/alleviate)
+[![Open on npmx.dev](https://npmx.dev/api/registry/badge/dependencies/alleviate)](https://npmx.dev/package/alleviate)
+[![Open on npmx.dev](https://npmx.dev/api/registry/badge/size/alleviate)](https://npmx.dev/package/alleviate)
 
 ## Usage
 
@@ -13,7 +11,7 @@
 An ever so slightly modified version of [flru](https://github.com/lukeed/flru) by lukeed, the fastest and smallest LRU cache I've benchmarked.
 
 > **Note**: It will keep store (and return) the last `max * 2` items in memory.
-> When the cache reaches `max * 2 + 1` it will evict the last `max` stale entries.
+> When the cache reaches `max * 2 + 1` it will evict the current stale entries.
 
 ```ts
 import { createLRU } from "alleviate"
@@ -38,35 +36,6 @@ lru.setMany([
 ])
 
 lru.clear()
-
-/* -- How it works -- */
-
-// set fresh values
-lru.set("1", "foo")
-lru.set("2", "bar")
-lru.set("3", "biz")
-
-// 1, 2, 3 are now cached
-lru.get("1") // "foo"
-
-// set 3 more.
-lru.setMany({
-	4: "4",
-	5: "5",
-	6: "6",
-})
-
-// 4, 5, 6 are now cached, 1, 2, 3 are still available but stale
-lru.get("3") // "biz"
-lru.get("6") // "6"
-
-// set 1 more.
-lru.set("7", "7")
-
-// 7 is now cached. 4, 5, 6, are stale. 1, 2, 3 have been evicted.
-lru.has("6") // true
-lru.has("7") // true
-lru.has("4") // false
 ```
 
 ### Limiter
@@ -84,6 +53,15 @@ const limiter = new Limiter({
 	refillOverLimit: false, // Whether the pool should be refilled over its limit
 	timeout: null, // How long to wait in ms for a call to resolve before rejecting
 })
+
+const response = await limiter.run(() => fetch("https://example.com"))
+
+const callExample = limiter.wrap((path: string) => fetch(`https://example.com/${path}`))
+await callExample("foo")
+
+// If `timeout` is set, `.run()` will receive an AbortSignal.
+const limiter = new Limiter({ timeout: 100 })
+const response = await limiter.run((signal) => fetch("https://example.com", { signal }))
 
 /* -- Examples -- */
 

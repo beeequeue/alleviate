@@ -84,8 +84,51 @@ describe("Limiter", () => {
 	})
 
 	describe("timeout", () => {
-		it.todo("timeout: rejects promise if function takes longer than timeout")
+		it("rejects promise if timeout is reached", async () => {
+			const limiter = createLimiter({ timeout: 100 })
 
-		it.todo("timeout: does nothing if timeout is null")
+			const spy = vi.fn(() => new Promise<void>((resolve) => setTimeout(resolve, 1000)))
+			const promise = limiter.run(spy)
+
+			// oxlint-disable-next-line vitest/valid-expect
+			const settled = expect(promise).rejects.toThrow("Promise timed out")
+
+			await vi.advanceTimersByTimeAsync(100)
+
+			await settled
+			expect(spy).toHaveBeenCalledOnce()
+			expect(limiter.queue).toEqual(0)
+		})
+
+		it("triggers AbortController if timeout is reached", async () => {
+			const limiter = createLimiter({ timeout: 100 })
+
+			let signal: AbortSignal
+			const spy = vi.fn((sig) => {
+				signal = sig
+				return new Promise<void>((resolve) => setTimeout(resolve, 1000))
+			})
+
+			const promise = await limiter.run(spy).catch(() => true)
+			await vi.advanceTimersByTimeAsync(100)
+			await promise
+
+			expect(signal!.aborted).toBe(true)
+		})
+
+		it("does nothing if timeout is null", async () => {
+			const limiter = createLimiter()
+
+			const value = Math.random()
+			const spy = vi.fn(() => new Promise<number>((resolve) => setTimeout(resolve, 1000, value)))
+			const promise = limiter.run(spy)
+
+			// Run long past any plausible default timeout; it must still resolve.
+			await vi.advanceTimersByTimeAsync(1000)
+
+			await expect(promise).resolves.toBe(value)
+			expect(spy).toHaveBeenCalledOnce()
+			expect(limiter.queue).toEqual(0)
+		})
 	})
 })

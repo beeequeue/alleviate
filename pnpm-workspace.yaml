@@ -26,6 +26,5 @@ overrides:
   eslint-plugin-pnpm>jsonc-eslint-parser: "-"
 
 savePrefix: ""
-shellEmulator: true
 
 trustPolicy: no-downgrade

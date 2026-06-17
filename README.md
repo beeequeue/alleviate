@@ -16,8 +16,6 @@ An ever so slightly modified version of [flru](https://github.com/lukeed/flru) b
 ```ts
 import { createLRU } from "alleviate"
 
-/* -- API -- */
-
 const lru = createLRU({ max: 3 })
 
 lru.set("foo", "bar")
@@ -43,7 +41,6 @@ lru.clear()
 ```ts
 import { createLimiter } from "alleviate"
 
-// Defaults
 const limiter = createLimiter({
 	concurrency: 4, // How many promises can be running at once (defaults to 3/4ths of available threads)
 	pool: 4, // Max number of calls before blocking (defaults to `concurrency`)
@@ -69,6 +66,7 @@ const response = await limiter.run((signal) => fetch("https://example.com", { si
 const limiter = createLimiter({
 	concurrency: 16,
 	pool: 60,
+	refillInterval: 60_000,
 })
 
 // 60 requests per minute, more spread out

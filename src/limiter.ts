@@ -14,7 +14,7 @@ type QueueItem = {
 	reject: (error: unknown) => void
 }
 
-type Limiter<Timeout = false> = {
+export interface Limiter<Timeout = false> {
 	readonly state: LimiterStatus
 	readonly pool: number
 	readonly queue: number
@@ -42,7 +42,7 @@ type Limiter<Timeout = false> = {
 	readonly wrap: <Fn extends GenericFn>(fn: Fn) => (...args: Parameters<Fn>) => ReturnType<Fn>
 }
 
-type LimiterOptions = {
+export interface LimiterOptions {
 	/** How many functions can be running concurrently. Defaults to `4`. */
 	concurrency?: number
 	/** How large the concurrency pool can be. Defaults to `concurrency`. */

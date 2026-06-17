@@ -2,7 +2,7 @@
 // the smallest and fastest LRU implementation i've benchmarked.
 // see LICENSE-flru.md
 
-export type LRU<Key extends string, Value> = {
+export interface LRU<Key extends string, Value> {
 	/** Check if key exists in cache */
 	has(key: Key): boolean
 	/** Get value from key without affecting LRU ordering */
@@ -17,7 +17,7 @@ export type LRU<Key extends string, Value> = {
 	clear(): void
 }
 
-type LRUOptions = {
+export interface LRUOptions {
 	max?: number
 }
 

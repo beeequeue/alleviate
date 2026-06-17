@@ -41,10 +41,10 @@ lru.clear()
 ### Limiter
 
 ```ts
-import { Limiter } from "alleviate"
+import { createLimiter } from "alleviate"
 
 // Defaults
-const limiter = new Limiter({
+const limiter = createLimiter({
 	concurrency: 4, // How many promises can be running at once
 	pool: 4, // Max number of calls before blocking (defaults to `concurrency`)
 	initial: 16, // How much the pool starts with (defaults to `pool`)
@@ -60,19 +60,19 @@ const callExample = limiter.wrap((path: string) => fetch(`https://example.com/${
 await callExample("foo")
 
 // If `timeout` is set, `.run()` will receive an AbortSignal.
-const limiter = new Limiter({ timeout: 100 })
+const limiter = createLimiter({ timeout: 100 })
 const response = await limiter.run((signal) => fetch("https://example.com", { signal }))
 
 /* -- Examples -- */
 
 // 60 requests per minute
-const limiter = new Limiter({
+const limiter = createLimiter({
 	concurrency: 16,
 	pool: 60,
 })
 
 // 60 requests per minute, more spread out
-const limiter = new Limiter({
+const limiter = createLimiter({
 	concurrency: 16,
 	pool: 60,
 	initial: 16,

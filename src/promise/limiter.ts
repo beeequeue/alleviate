@@ -1,18 +1,12 @@
 import { TimeoutError } from "../error.ts"
 
+import { type GenericFn, type QueueItem } from "./util.ts"
+
 function timeoutPromise(ms: number): Promise<never> {
 	return new Promise((_, reject) => reject(new TimeoutError(ms)))
 }
 
-type GenericFn = (...args: any) => Promise<any>
-
 type LimiterStatus = "idle" | "running" | "blocking"
-
-type QueueItem = {
-	fn: GenericFn
-	resolve: (value: any) => void
-	reject: (error: unknown) => void
-}
 
 export interface Limiter<Timeout = false> {
 	readonly state: LimiterStatus

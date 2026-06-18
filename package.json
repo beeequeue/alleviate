@@ -16,6 +16,7 @@
 		".": "./dist/index.mjs",
 		"./cache/lru": "./dist/cache/lru.mjs",
 		"./promise/limiter": "./dist/promise/limiter.mjs",
+		"./promise/queue": "./dist/promise/queue.mjs",
 		"./package.json": "./package.json"
 	},
 	"lint-staged": {

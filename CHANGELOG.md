@@ -1,5 +1,11 @@
 # alleviate
 
+## 0.0.0-alpha.4
+
+### Minor Changes
+
+- ce46bb0: Added `createQueue()`, a simple promise queue.
+
 ## 0.0.0-alpha.3
 
 ### Patch Changes

@@ -4,5 +4,10 @@
 	"initialVersions": {
 		"alleviate": "0.0.0-alpha.0"
 	},
-	"changesets": ["seven-grapes-wonder", "sharp-cooks-pick", "tame-suits-listen"]
+	"changesets": [
+		"seven-grapes-wonder",
+		"sharp-cooks-pick",
+		"tall-beers-invent",
+		"tame-suits-listen"
+	]
 }

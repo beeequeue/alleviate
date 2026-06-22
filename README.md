@@ -148,4 +148,4 @@ const limiter = createLimiter({
   - [ ] memoize
 - limiting
   - [x] promise limiter
-  - [ ] promise queue
+  - [x] promise queue

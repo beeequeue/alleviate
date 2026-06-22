@@ -6,6 +6,10 @@
 
 ## Usage
 
+- [createLRU](#lru) - A simple, fast LRU cache.
+- [createQueue](#queue) - A simple FIFO promise queue.
+- [createLimiter](#limiter) - A more complex promise queue/limiter. Supports more advanced rate limiting than `Queue`.
+
 ### LRU
 
 An ever so slightly modified version of [flru](https://github.com/lukeed/flru) by lukeed, the fastest and smallest LRU cache I've benchmarked.
@@ -36,7 +40,64 @@ lru.setMany([
 lru.clear()
 ```
 
+<!-- REMOVE START -->
+
+#### Comparisons
+
+_updated 2026-06-22. [benches](https://github.com/beeequeue/node-benches/tree/main/benches/lru) ran on a Ryzen 9800X3D_
+
+| library     | install size | bundle size   | get 10 000 items  | set 10 000 items  | set+evict 10 000 items |
+| ----------- | ------------ | ------------- | ----------------- | ----------------- | ---------------------- |
+| `alleviate` | ?kB          | 514b          | 231.96 µs         | 457.33 µs         | 1.19 ms                |
+| `flru`      | 8.9kB        | 373b (~same)  | 303.74 µs (~same) | 510.42 µs (~same) | 1.21 ms (~same)        |
+| `tiny-lru`  | 57.0kB       | 10kB (+1957%) | 379.05 µs (~same) | 573.41 µs (~same) | 1.32 ms (~same)        |
+| `lru-cache` | 2.7MB        | 37kB (+7214%) | 1.18 ms (+510%)   | 2.04 ms (+446%)   | 3.01 ms (+252%)        |
+
+| library     | get | has | peek | set | delete | 🕐 TTL |
+| ----------- | --- | --- | ---- | --- | ------ | ------ |
+| `alleviate` | ✅  | ✅  | ✅   | ✅  | ❌     | ❌     |
+| `flru`      | ✅  | ✅  | ❌   | ✅  | ❌     | ❌     |
+| `tiny-lru`  | ✅  | ✅  | ✅   | ✅  | ✅     | ✅     |
+| `lru-cache` | ✅  | ✅  | ✅   | ✅  | ✅     | ✅     |
+
+<!-- REMOVE END -->
+
+### Queue
+
+An intentionally simple promise queue that only accepts a `concurrency` option.
+
+For more advanced promise limiting (timeouts, pools, etc.), see [`Limiter`](#limiter).
+
+```ts
+import { createQueue } from "alleviate"
+
+const queue = createQueue({ concurrency: 4 })
+
+// run a function asap
+const response = await queue.run(() => fetch("https://example.com"))
+
+// wrap a function to run it later, or multiple times
+const callExample = queue.wrap((path: string) => fetch(`https://example.com/${path}`))
+await callExample("foo")
+```
+
 ### Limiter
+
+Intended as a replacement for [`bottleneck`](https://npmx.dev/bottleneck), [`p-queue`](https://npmx.dev/p-queue).
+
+<!-- REMOVE START -->
+
+#### Comparisons
+
+_updated 2026-06-22. [benches](https://github.com/beeequeue/node-benches/tree/main/benches/lru) ran on a Ryzen 9800X3D_
+
+| library      | install size | bundle size   | external sync (e.g. redis) | reservoir-style limiting |
+| ------------ | ------------ | ------------- | -------------------------- | ------------------------ |
+| `alleviate`  | 15?kB        | 1.1kB         | ❌                         | ✅                       |
+| `p-queue`    | 171kB        | 12kB (+1091%) | ❌                         | ❌                       |
+| `bottleneck` | 629kB        | 61kb (+5545%) | ✅                         | ✅                       |
+
+<!-- REMOVE END -->
 
 ```ts
 import { createLimiter } from "alleviate"

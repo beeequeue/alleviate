@@ -48,12 +48,12 @@ lru.clear()
 
 _updated 2026-06-22. [benches](https://github.com/beeequeue/node-benches/tree/main/benches/lru) ran on a Ryzen 9800X3D_
 
-| library     | install size | bundle size   | get 10 000 items  | set 10 000 items  | set+evict 10 000 items |
-| ----------- | ------------ | ------------- | ----------------- | ----------------- | ---------------------- |
-| `alleviate` | ?kB          | 514b          | 231.96 µs         | 457.33 µs         | 1.19 ms                |
-| `flru`      | 8.9kB        | 373b (~same)  | 303.74 µs (~same) | 510.42 µs (~same) | 1.21 ms (~same)        |
-| `tiny-lru`  | 57.0kB       | 10kB (+1957%) | 379.05 µs (~same) | 573.41 µs (~same) | 1.32 ms (~same)        |
-| `lru-cache` | 2.7MB        | 37kB (+7214%) | 1.18 ms (+510%)   | 2.04 ms (+446%)   | 3.01 ms (+252%)        |
+| library     | install size   | bundle size   | get 10 000 items  | set 10 000 items  | set+evict 10 000 items |
+| ----------- | -------------- | ------------- | ----------------- | ----------------- | ---------------------- |
+| `alleviate` | 15kB           | 514b          | 231.96 µs         | 457.33 µs         | 1.19 ms                |
+| `flru`      | 8.9kB (-59%)   | 373b (~same)  | 303.74 µs (~same) | 510.42 µs (~same) | 1.21 ms (~same)        |
+| `tiny-lru`  | 57.0kB (+380%) | 10kB (+1957%) | 379.05 µs (~same) | 573.41 µs (~same) | 1.32 ms (~same)        |
+| `lru-cache` | 2.7MB (x180!)  | 37kB (+7214%) | 1.18 ms (+510%)   | 2.04 ms (+446%)   | 3.01 ms (+252%)        |
 
 | library     | get | has | peek | set | delete | 🕐 TTL |
 | ----------- | --- | --- | ---- | --- | ------ | ------ |
@@ -97,11 +97,11 @@ Intended as a replacement for [`bottleneck`](https://npmx.dev/bottleneck), [`p-q
 
 _updated 2026-06-22_
 
-| library      | install size | bundle size   | external sync (e.g. redis) | reservoir-style limiting |
-| ------------ | ------------ | ------------- | -------------------------- | ------------------------ |
-| `alleviate`  | 15?kB        | 1.1kB         | ❌                         | ✅                       |
-| `p-queue`    | 171kB        | 12kB (+1091%) | ❌                         | ❌                       |
-| `bottleneck` | 629kB        | 61kb (+5545%) | ✅                         | ✅                       |
+| library      | install size   | bundle size   | external sync (e.g. redis) | reservoir-style limiting |
+| ------------ | -------------- | ------------- | -------------------------- | ------------------------ |
+| `alleviate`  | 15kB           | 1.1kB         | ❌                         | ✅                       |
+| `p-queue`    | 171kB (+1140%) | 12kB (+1091%) | ❌                         | ❌                       |
+| `bottleneck` | 629kB (+4193%) | 61kb (+5545%) | ✅                         | ✅                       |
 
 </details>
 

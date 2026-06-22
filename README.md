@@ -42,7 +42,9 @@ lru.clear()
 
 <!-- REMOVE START -->
 
-#### Comparisons
+<details>
+
+<summary>Comparisons</summary>
 
 _updated 2026-06-22. [benches](https://github.com/beeequeue/node-benches/tree/main/benches/lru) ran on a Ryzen 9800X3D_
 
@@ -59,6 +61,8 @@ _updated 2026-06-22. [benches](https://github.com/beeequeue/node-benches/tree/ma
 | `flru`      | ✅  | ✅  | ❌   | ✅  | ❌     | ❌     |
 | `tiny-lru`  | ✅  | ✅  | ✅   | ✅  | ✅     | ✅     |
 | `lru-cache` | ✅  | ✅  | ✅   | ✅  | ✅     | ✅     |
+
+</details>
 
 <!-- REMOVE END -->
 
@@ -87,15 +91,19 @@ Intended as a replacement for [`bottleneck`](https://npmx.dev/bottleneck), [`p-q
 
 <!-- REMOVE START -->
 
-#### Comparisons
+<details>
 
-_updated 2026-06-22. [benches](https://github.com/beeequeue/node-benches/tree/main/benches/lru) ran on a Ryzen 9800X3D_
+<summary>Comparisons</summary>
+
+_updated 2026-06-22_
 
 | library      | install size | bundle size   | external sync (e.g. redis) | reservoir-style limiting |
 | ------------ | ------------ | ------------- | -------------------------- | ------------------------ |
 | `alleviate`  | 15?kB        | 1.1kB         | ❌                         | ✅                       |
 | `p-queue`    | 171kB        | 12kB (+1091%) | ❌                         | ❌                       |
 | `bottleneck` | 629kB        | 61kb (+5545%) | ✅                         | ✅                       |
+
+</details>
 
 <!-- REMOVE END -->
 
@@ -139,6 +147,8 @@ const limiter = createLimiter({
 	refillInterval: 10_000,
 })
 ```
+
+<!-- REMOVE START -->
 
 ### todo
 

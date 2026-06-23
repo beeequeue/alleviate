@@ -1,6 +1,7 @@
 allowBuilds:
   simple-git-hooks: false
 
+blockExoticSubdeps: false
 dedupePeers: true
 dedupePeerDependents: true
 

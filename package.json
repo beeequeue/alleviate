@@ -4,7 +4,7 @@
 	"version": "0.0.0-alpha.4",
 	"author": "BeeeQueue <adam@haglund.dev>",
 	"license": "MIT",
-	"packageManager": "pnpm@11.7.0",
+	"packageManager": "pnpm@11.8.0",
 	"engines": {
 		"node": "^22 || ^24 || ^26 || ^27"
 	},
@@ -34,8 +34,7 @@
 		"lint": "oxlint",
 		"lint:format": "oxfmt --check",
 		"prepack": "node scripts/clean-before-pack.ts",
-		"test": "vitest",
-		"typecheck": "tsc --noEmit"
+		"test": "vitest"
 	},
 	"devDependencies": {
 		"@changesets/changelog-github": "1.0.0-next.5",
@@ -52,7 +51,6 @@
 		"p-queue": "9.3.0",
 		"simple-git-hooks": "2.13.1",
 		"tsdown": "0.22.2",
-		"typescript": "6.0.3",
 		"vitest": "5.0.0-beta.5"
 	}
 }

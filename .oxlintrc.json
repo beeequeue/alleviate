@@ -38,6 +38,8 @@
 			{ "fixStyle": "inline-type-imports", "disallowTypeAnnotations": false }
 		],
 
+		"eqeqeq": ["error", "always", { "null": "never" }],
+		"no-undefined": "error",
 		"no-console": "warn",
 		"no-shadow": "off",
 		"oxc/no-async-endpoint-handlers": "off",

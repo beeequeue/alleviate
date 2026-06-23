@@ -7,6 +7,7 @@
 ## Usage
 
 - [createLRU](#lru) - A simple, fast LRU cache.
+- [createTTLMap](#ttl-map) - A more complex promise queue/limiter. Supports more advanced rate limiting than `Queue`.
 - [createQueue](#queue) - A simple FIFO promise queue.
 - [createLimiter](#limiter) - A more complex promise queue/limiter. Supports more advanced rate limiting than `Queue`.
 
@@ -66,6 +67,22 @@ _updated 2026-06-22. [benches](https://github.com/beeequeue/node-benches/tree/ma
 
 <!-- REMOVE END -->
 
+### TTL Map
+
+A simple TTL Map that evicts entries after a given expiration time.
+
+```ts
+import { createTTLMap } from "alleviate"
+
+const cache = createTTLMap({ ttl: 60_000 })
+
+cache.set("foo", "bar")
+cache.has("foo") // true, does not affect TTL
+cache.get("foo") // "bar", refreshes TTL unless `getRefreshesTTL` is false
+cache.peek("foo") // "bar", does not affect TTL
+lru.clear()
+```
+
 ### Queue
 
 An intentionally simple promise queue that only accepts a `concurrency` option.
@@ -88,24 +105,6 @@ await callExample("foo")
 ### Limiter
 
 Intended as a replacement for [`bottleneck`](https://npmx.dev/bottleneck), [`p-queue`](https://npmx.dev/p-queue).
-
-<!-- REMOVE START -->
-
-<details>
-
-<summary>Comparisons</summary>
-
-_updated 2026-06-22_
-
-| library      | install size   | bundle size   | external sync (e.g. redis) | reservoir-style limiting |
-| ------------ | -------------- | ------------- | -------------------------- | ------------------------ |
-| `alleviate`  | 15kB           | 1.1kB         | ❌                         | ✅                       |
-| `p-queue`    | 171kB (+1140%) | 12kB (+1091%) | ❌                         | ❌                       |
-| `bottleneck` | 629kB (+4193%) | 61kb (+5545%) | ✅                         | ✅                       |
-
-</details>
-
-<!-- REMOVE END -->
 
 ```ts
 import { createLimiter } from "alleviate"
@@ -150,11 +149,29 @@ const limiter = createLimiter({
 
 <!-- REMOVE START -->
 
+<details>
+
+<summary>Comparisons</summary>
+
+_updated 2026-06-22_
+
+| library      | install size   | bundle size   | external sync (e.g. redis) | reservoir-style limiting |
+| ------------ | -------------- | ------------- | -------------------------- | ------------------------ |
+| `alleviate`  | 15kB           | 1.1kB         | ❌                         | ✅                       |
+| `p-queue`    | 171kB (+1140%) | 12kB (+1091%) | ❌                         | ❌                       |
+| `bottleneck` | 629kB (+4193%) | 61kb (+5545%) | ✅                         | ✅                       |
+
+</details>
+
+<!-- REMOVE END -->
+
+<!-- REMOVE START -->
+
 ### todo
 
 - caching
   - [x] LRU
-  - [ ] TTL Map
+  - [x] TTL Map
   - [ ] memoize
 - limiting
   - [x] promise limiter

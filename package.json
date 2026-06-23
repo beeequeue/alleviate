@@ -37,8 +37,8 @@
 		"test": "vitest"
 	},
 	"devDependencies": {
-		"@changesets/changelog-github": "https://pkg.pr.new/changesets/changesets/@changesets/changelog-github@5cdc63e",
-		"@changesets/cli": "https://pkg.pr.new/changesets/changesets/@changesets/cli@5cdc63e",
+		"@changesets/changelog-github": "1.0.0-next.5",
+		"@changesets/cli": "3.0.0-next.5",
 		"@e18e/eslint-plugin": "0.5.0",
 		"@tsconfig/node26": "26.0.0",
 		"@tsconfig/strictest": "2.0.8",

@@ -1,6 +1,5 @@
 import { TimeoutError } from "../error.ts"
-
-import { type GenericFn, type QueueItem } from "./util.ts"
+import { type GenericFn, type QueueItem } from "../util.ts"
 
 function timeoutPromise(ms: number): Promise<never> {
 	return new Promise((_, reject) => reject(new TimeoutError(ms)))

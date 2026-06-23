@@ -1,3 +1,5 @@
 export { createLRU, type LRU, type LRUOptions } from "./cache/lru.ts"
+export { memoize } from "./cache/memoize.ts"
+export { createTTLMap, type TTLMap } from "./cache/ttl-map.ts"
 export { createLimiter, type Limiter, type LimiterOptions } from "./promise/limiter.ts"
 export { createQueue, type Queue, type QueueOptions } from "./promise/queue.ts"

@@ -1,4 +1,4 @@
-type TTLMap<Key, Value> = {
+export type TTLMap<Key, Value> = {
 	/** Check if a value exists in the Map. Does not affect TTL. */
 	has(key: Key): boolean
 	/** Get a value from the Map. Refreshes TTL unless `getRefreshesTTL` was set to `false`. */

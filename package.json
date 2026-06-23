@@ -15,6 +15,8 @@
 	"exports": {
 		".": "./dist/index.mjs",
 		"./cache/lru": "./dist/cache/lru.mjs",
+		"./cache/memoize": "./dist/cache/memoize.mjs",
+		"./cache/ttl-map": "./dist/cache/ttl-map.mjs",
 		"./promise/limiter": "./dist/promise/limiter.mjs",
 		"./promise/queue": "./dist/promise/queue.mjs",
 		"./package.json": "./package.json"

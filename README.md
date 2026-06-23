@@ -8,6 +8,7 @@
 
 - [createLRU](#lru) - A simple, fast LRU cache.
 - [createTTLMap](#ttl-map) - A more complex promise queue/limiter. Supports more advanced rate limiting than `Queue`.
+- [memoize](#memoize) - Memoize a function, i.e. cache its results based on its parameters to skip re-computation.
 - [createQueue](#queue) - A simple FIFO promise queue.
 - [createLimiter](#limiter) - A more complex promise queue/limiter. Supports more advanced rate limiting than `Queue`.
 
@@ -81,6 +82,26 @@ cache.has("foo") // true, does not affect TTL
 cache.get("foo") // "bar", refreshes TTL unless `getRefreshesTTL` is false
 cache.peek("foo") // "bar", does not affect TTL
 lru.clear()
+```
+
+### Memoize
+
+Memoize a function, i.e. cache its results based on its parameters to skip re-computation.
+
+```ts
+import { memoize } from "alleviate"
+
+const fibonacci = memoize((num: number) => {
+	/* ... */
+})
+fibonacci(100)
+fibonacci(100) // skips executing function, returns cached result
+
+const memoized = memoize(fn, {
+	max: 100, // number of cached results to keep before evicting the oldest
+	keepNullish: true, // whether to cache nullish results (null, undefined). Defaults to `false`.
+	serialize: (params) => {}, // custom parameter serialization for the cache key. Defaults to `JSON.stringify`.
+})
 ```
 
 ### Queue
@@ -172,7 +193,7 @@ _updated 2026-06-22_
 - caching
   - [x] LRU
   - [x] TTL Map
-  - [ ] memoize
+  - [x] memoize
 - limiting
   - [x] promise limiter
   - [x] promise queue

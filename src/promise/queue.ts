@@ -1,4 +1,4 @@
-import { type GenericFn, type QueueItem } from "./util.ts"
+import { type GenericFn, type QueueItem } from "../util.ts"
 
 type QueueStatus = "idle" | "running" | "blocking"
 

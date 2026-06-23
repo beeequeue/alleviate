@@ -1,4 +1,4 @@
-import { TimeoutError } from "../error.ts"
+import { TimeoutError } from "./error.ts"
 
 export function timeoutPromise(ms: number): Promise<never> {
 	return new Promise((_, reject) => reject(new TimeoutError(ms)))

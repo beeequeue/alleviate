@@ -13,6 +13,8 @@ export interface LRU<Key extends string, Value> {
 	set(key: Key, value: Value): void
 	/** Adding or updating many keys' values at once */
 	setMany(entries: Record<Key, Value> | Iterable<[Key, Value]>): void
+	/** Delete a key */
+	delete(key: Key): void
 	/** Remove all values */
 	clear(): void
 }
@@ -78,6 +80,11 @@ export function createLRU<Key extends string, Value>(opts: LRUOptions = {}): LRU
 		}
 	}
 
+	function deleteKey(key: Key) {
+		delete current[key]
+		delete previous[key]
+	}
+
 	return {
 		clear: reset,
 		has: (key) => current[key] != null || previous[key] != null,
@@ -85,5 +92,6 @@ export function createLRU<Key extends string, Value>(opts: LRUOptions = {}): LRU
 		get,
 		set,
 		setMany,
+		delete: deleteKey,
 	}
 }

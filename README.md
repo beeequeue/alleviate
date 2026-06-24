@@ -59,7 +59,7 @@ _updated 2026-06-22. [benches](https://github.com/beeequeue/node-benches/tree/ma
 
 | library     | get | has | peek | set | delete | 🕐 TTL |
 | ----------- | --- | --- | ---- | --- | ------ | ------ |
-| `alleviate` | ✅  | ✅  | ✅   | ✅  | ❌     | ❌     |
+| `alleviate` | ✅  | ✅  | ✅   | ✅  | ✅     | ❌     |
 | `flru`      | ✅  | ✅  | ❌   | ✅  | ❌     | ❌     |
 | `tiny-lru`  | ✅  | ✅  | ✅   | ✅  | ✅     | ✅     |
 | `lru-cache` | ✅  | ✅  | ✅   | ✅  | ✅     | ✅     |

@@ -133,6 +133,21 @@ describe("createMapLru", () => {
 		})
 	})
 
+	it(".delete()", () => {
+		const lru = createLRU<string, number>({ max: 3 })
+		const keys = ["a", "b", "c", "d", "e"]
+		keys.forEach((key, i) => lru.set(key, i))
+
+		keysExist(lru, keys)
+
+		lru.delete("a")
+		lru.delete("e")
+		lru.delete("z")
+
+		expect(lru.has("a")).toBe(false)
+		expect(lru.has("e")).toBe(false)
+	})
+
 	it(".clear()", () => {
 		const lru = createLRU<string, number>({ max: 3 })
 		const keys = ["a", "b", "c"]

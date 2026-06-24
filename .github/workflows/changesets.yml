@@ -22,7 +22,7 @@ jobs:
     permissions:
       contents: read # to check out repo
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -35,7 +35,7 @@ jobs:
 
       - name: Select mode
         id: select-mode
-        uses: changesets/action/select-mode@ee7a001fa469e27dedbd16d54231a45eeee08a09 # v2.0.0-next.1
+        uses: changesets/action/select-mode@8f7aee55a02899b4d6140157e482211eb49fcbee # v2.0.0-next.2
 
   version:
     name: Version
@@ -57,7 +57,7 @@ jobs:
       - name: Create or update release pull request
         id: changesets
         # https://github.com/changesets/action
-        uses: changesets/action/version@ee7a001fa469e27dedbd16d54231a45eeee08a09 # v2.0.0-next.1
+        uses: changesets/action/version@8f7aee55a02899b4d6140157e482211eb49fcbee # v2.0.0-next.2
 
   pack:
     name: Pack
@@ -70,7 +70,7 @@ jobs:
       contents: read # to check out repo
     steps:
       - name: Check out repo
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -86,7 +86,7 @@ jobs:
 
       - name: Pack
         id: pack
-        uses: changesets/action/pack@ee7a001fa469e27dedbd16d54231a45eeee08a09 # v2.0.0-next.1
+        uses: changesets/action/pack@8f7aee55a02899b4d6140157e482211eb49fcbee # v2.0.0-next.2
         with:
           publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
 
@@ -99,6 +99,6 @@ jobs:
 
     steps:
       - name: Publish to npm
-        uses: changesets/action/publish@ee7a001fa469e27dedbd16d54231a45eeee08a09 # v2.0.0-next.1
+        uses: changesets/action/publish@8f7aee55a02899b4d6140157e482211eb49fcbee # v2.0.0-next.2
         with:
           pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}

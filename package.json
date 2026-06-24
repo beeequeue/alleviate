@@ -6,7 +6,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/BeeeQueue/alleviate.git"
+		"url": "git+https://github.com/beeequeue/alleviate.git"
 	},
 	"packageManager": "pnpm@11.9.0",
 	"engines": {

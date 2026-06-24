@@ -1,38 +1,11 @@
+import * as crypto from "node:crypto"
+
+import { identify } from "object-identity"
+
 type GenericSyncFn = (...args: any) => any
 
-function isPrimitive(
-	input: unknown,
-): input is boolean | string | number | bigint | null | undefined {
-	return (
-		typeof input === "boolean" ||
-		typeof input === "string" ||
-		typeof input === "number" ||
-		typeof input === "bigint" ||
-		input == null
-	)
-}
-
-const sep = "-||-"
-
 function defaultParameterSerializer(params: unknown[]): string {
-	const allPrimitives = params.every(isPrimitive)
-	if (allPrimitives) {
-		return params.join(sep)
-	}
-
-	return params
-		.map((param) => {
-			// oxlint-disable-next-line eqeqeq
-			if (param === null) return "null"
-			// oxlint-disable-next-line no-undefined
-			if (param === undefined) return "undefined"
-			if (isPrimitive(param)) {
-				return param.toString()
-			}
-
-			return JSON.stringify(param)
-		})
-		.join(sep)
+	return crypto.hash("sha256", identify(params))
 }
 
 type MemoizeOptions<Fn extends GenericSyncFn> = {

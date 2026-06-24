@@ -100,7 +100,7 @@ fibonacci(100) // skips executing function, returns cached result
 const memoized = memoize(fn, {
 	max: 100, // number of cached results to keep before evicting the oldest
 	keepNullish: true, // whether to cache nullish results (null, undefined). Defaults to `false`.
-	serialize: (params) => {}, // custom parameter serialization for the cache key. Defaults to `JSON.stringify`.
+	serialize: (params) => {}, // custom parameter serialization for the cache key. Defaults to `object-identity` + sha256 hashing.
 })
 ```
 

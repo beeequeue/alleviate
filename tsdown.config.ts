@@ -12,6 +12,9 @@ export default defineConfig({
 	outDir: "dist",
 	exports: true,
 	fixedExtension: true,
+	deps: {
+		onlyBundle: ["object-identity"],
+	},
 
 	env: { TEST: false },
 

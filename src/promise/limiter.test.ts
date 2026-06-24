@@ -109,7 +109,7 @@ describe("Limiter", () => {
 				return new Promise<void>((resolve) => setTimeout(resolve, 1000))
 			})
 
-			const promise = await limiter.run(spy).catch(() => true)
+			const promise = limiter.run(spy).catch(() => true)
 			await vi.advanceTimersByTimeAsync(100)
 			await promise
 

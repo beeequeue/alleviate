@@ -100,6 +100,7 @@ export function createLimiter<Options extends LimiterOptions>(
 
 	async function executeQueueFn() {
 		const { fn, resolve, reject } = queue.shift()!
+		// oxlint-disable-next-line no-undefined
 		const controller = opts.timeout != null ? new AbortController() : undefined
 
 		try {

@@ -6,7 +6,7 @@
 	"license": "MIT",
 	"packageManager": "pnpm@11.8.0",
 	"engines": {
-		"node": "^22 || ^24 || ^26 || ^27"
+		"node": "^22.11 || ^24 || ^26 || ^27"
 	},
 	"files": [
 		"dist",

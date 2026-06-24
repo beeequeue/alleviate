@@ -196,4 +196,7 @@ _updated 2026-06-22_
   - [x] memoize
 - limiting
   - [x] promise limiter
+    - [ ] change impl to remove interval, use last-run-timestamp instead
+    - [ ] support changing concurrency
+    - [ ] support changing reservoir level
   - [x] promise queue

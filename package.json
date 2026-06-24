@@ -4,6 +4,10 @@
 	"version": "0.1.0",
 	"author": "BeeeQueue <adam@haglund.dev>",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/BeeeQueue/alleviate.git"
+	},
 	"packageManager": "pnpm@11.9.0",
 	"engines": {
 		"node": "^22.11 || ^24 || ^26 || ^27"
@@ -50,6 +54,7 @@
 		"oxlint": "1.69.0",
 		"oxlint-tsgolint": "0.23.0",
 		"p-queue": "9.3.0",
+		"publint": "0.3.21",
 		"simple-git-hooks": "2.13.1",
 		"tsdown": "0.22.2",
 		"vitest": "5.0.0-beta.5"

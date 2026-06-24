@@ -26,4 +26,6 @@ export default defineConfig({
 	outputOptions: {
 		comments: { jsdoc: false }, // removes jsdoc comments from JS output, keeps them in TS
 	},
+
+	publint: true,
 })

@@ -22,6 +22,10 @@ function defaultParameterSerializer(params: unknown[]): string {
 
 	return params
 		.map((param) => {
+			// oxlint-disable-next-line eqeqeq
+			if (param === null) return "null"
+			// oxlint-disable-next-line no-undefined
+			if (param === undefined) return "undefined"
 			if (isPrimitive(param)) {
 				return param.toString()
 			}

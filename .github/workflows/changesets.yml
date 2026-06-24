@@ -97,7 +97,7 @@ jobs:
     environment: npm
     timeout-minutes: 20
     permissions:
-      contents: read # to check out repo
+      contents: write # to create git tags, GH releases
       id-token: write # to publish to npm
 
     steps:

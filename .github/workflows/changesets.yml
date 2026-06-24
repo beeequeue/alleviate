@@ -98,6 +98,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read # to check out repo
+      id-token: write # to publish to npm
 
     steps:
       - name: Check out repo

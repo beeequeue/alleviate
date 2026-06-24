@@ -1,4 +1,4 @@
-name: Comment Changesets status in PRs
+name: changesets-status
 
 on:
   pull_request_target:
@@ -10,22 +10,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pr-status:
+  status:
     runs-on: ubuntu-slim
     permissions:
       contents: read # to check out files in the repo
     outputs:
-      comment-body: ${{ steps.pr-status.outputs.comment-body }}
+      comment-body: ${{ steps.status.outputs.comment-body }}
     steps:
       - name: Check out repo
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Generate status
-        id: pr-status
+        id: status
         uses: changesets/action/pr-status@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
 
-  pr-comment:
-    needs: pr-status
+  comment:
+    needs: status
     runs-on: ubuntu-slim
     permissions:
       pull-requests: write # to create and update comments on PRs
@@ -33,4 +33,4 @@ jobs:
       - name: Comment on PR
         uses: changesets/action/pr-comment@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
-          body: ${{ needs.pr-status.outputs.comment-body }}
+          body: ${{ needs.status.outputs.comment-body }}

@@ -199,4 +199,5 @@ _updated 2026-06-22_
     - [ ] change impl to remove interval, use last-run-timestamp instead
     - [ ] support changing concurrency
     - [ ] support changing reservoir level
+    - [ ] add example for complex rate limiting handling based on returned info from API
   - [x] promise queue

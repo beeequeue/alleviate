@@ -8,7 +8,7 @@
 		"type": "git",
 		"url": "git+https://github.com/beeequeue/alleviate.git"
 	},
-	"packageManager": "pnpm@11.9.0",
+	"packageManager": "pnpm@11.10.0",
 	"engines": {
 		"node": "^22.11 || ^24 || ^26 || ^27"
 	},

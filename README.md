@@ -190,14 +190,17 @@ _updated 2026-06-22_
 
 ### todo
 
+- [ ] ponyfill Promise.withResolvers until Node 24 + baseline widely available
 - caching
   - [x] LRU
   - [x] TTL Map
   - [x] memoize
+  - [x] dataloader
 - limiting
   - [x] promise limiter
     - [ ] change impl to remove interval, use last-run-timestamp instead
     - [ ] support changing concurrency
     - [ ] support changing reservoir level
     - [ ] add example for complex rate limiting handling based on returned info from API
+    - [ ] external store (redis, whatever)
   - [x] promise queue

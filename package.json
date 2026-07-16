@@ -1,13 +1,24 @@
 {
 	"name": "alleviate",
-	"type": "module",
-	"version": "0.1.1",
+	"description": "A collection of tiny caching and promise utilities",
+	"keywords": [
+		"cache",
+		"promise",
+		"queue",
+		"limiter",
+		"memoize",
+		"lru",
+		"ttl",
+		"dataloader"
+	],
 	"author": "BeeeQueue <adam@haglund.dev>",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/beeequeue/alleviate.git"
 	},
+	"version": "0.1.1",
+	"type": "module",
 	"packageManager": "pnpm@11.13.0",
 	"engines": {
 		"node": "^22.11 || ^24 || ^26 || ^27"

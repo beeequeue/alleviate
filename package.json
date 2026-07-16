@@ -8,7 +8,7 @@
 		"type": "git",
 		"url": "git+https://github.com/beeequeue/alleviate.git"
 	},
-	"packageManager": "pnpm@11.10.0",
+	"packageManager": "pnpm@11.13.0",
 	"engines": {
 		"node": "^22.11 || ^24 || ^26 || ^27"
 	},
@@ -41,25 +41,25 @@
 		"test": "vitest"
 	},
 	"devDependencies": {
-		"@changesets/changelog-github": "https://pkg.pr.new/changesets/changesets/@changesets/changelog-github@a69ede9",
-		"@changesets/cli": "https://pkg.pr.new/changesets/changesets/@changesets/cli@a69ede9",
-		"@e18e/eslint-plugin": "0.5.0",
+		"@changesets/changelog-github": "1.0.0-next.6",
+		"@changesets/cli": "3.0.0-next.8",
+		"@e18e/eslint-plugin": "0.5.1",
 		"@tsconfig/node26": "26.0.0",
 		"@tsconfig/strictest": "2.0.8",
-		"@types/node": "25.9.3",
-		"@typescript/native-preview": "7.0.0-dev.20260614.1",
-		"lint-staged": "17.0.7",
-		"object-identity": "0.2.0",
-		"oxfmt": "0.54.0",
-		"oxlint": "1.69.0",
-		"oxlint-tsgolint": "0.23.0",
+		"@types/node": "26.1.1",
+		"lint-staged": "17.0.8",
+		"object-identity": "0.2.3",
+		"oxfmt": "0.58.0",
+		"oxlint": "1.73.0",
+		"oxlint-tsgolint": "0.24.0",
 		"p-queue": "9.3.0",
 		"publint": "0.3.21",
 		"simple-git-hooks": "2.13.1",
-		"tsdown": "0.22.2",
-		"vitest": "5.0.0-beta.5"
+		"tsdown": "0.22.8",
+		"typescript": "7.0.2",
+		"vitest": "5.0.0-beta.6"
 	},
 	"inlinedDependencies": {
-		"object-identity": "0.2.0"
+		"object-identity": "0.2.3"
 	}
 }

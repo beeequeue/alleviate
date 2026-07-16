@@ -22,7 +22,7 @@ jobs:
 
       - name: Generate status
         id: status
-        uses: changesets/action/pr-status@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        uses: changesets/action/pr-status@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
 
   comment:
     needs: status
@@ -31,6 +31,6 @@ jobs:
       pull-requests: write # to create and update comments on PRs
     steps:
       - name: Comment on PR
-        uses: changesets/action/pr-comment@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        uses: changesets/action/pr-comment@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
         with:
           body: ${{ needs.status.outputs.comment-body }}

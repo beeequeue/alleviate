@@ -1,7 +1,17 @@
 import { TimeoutError } from "./error.ts"
 
-export function timeoutPromise(ms: number): Promise<never> {
-	return new Promise((_, reject) => reject(new TimeoutError(ms)))
+export function timeoutPromise(ms: number): { cancel: () => void; promise: Promise<never> } {
+	let cancel!: () => void
+
+	const promise = new Promise<never>((_, reject) => {
+		const timeout = setTimeout(() => {
+			reject(new TimeoutError(ms))
+		}, ms)
+
+		cancel = () => clearTimeout(timeout)
+	})
+
+	return { cancel, promise }
 }
 
 export type GenericFn = (...args: any) => Promise<any>

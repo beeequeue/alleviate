@@ -81,7 +81,7 @@ cache.set("foo", "bar")
 cache.has("foo") // true, does not affect TTL
 cache.get("foo") // "bar", refreshes TTL unless `getRefreshesTTL` is false
 cache.peek("foo") // "bar", does not affect TTL
-lru.clear()
+cache.clear()
 ```
 
 ### Memoize

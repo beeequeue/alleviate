@@ -1,9 +1,4 @@
-import { TimeoutError } from "../error.ts"
-import { type GenericFn, type QueueItem } from "../util.ts"
-
-function timeoutPromise(ms: number): Promise<never> {
-	return new Promise((_, reject) => reject(new TimeoutError(ms)))
-}
+import { type GenericFn, type QueueItem, timeoutPromise } from "../util.ts"
 
 type LimiterStatus = "idle" | "running" | "blocking"
 
@@ -104,11 +99,15 @@ export function createLimiter<Options extends LimiterOptions>(
 		const controller = opts.timeout != null ? new AbortController() : undefined
 
 		try {
-			const promise =
-				opts.timeout != null
-					? Promise.race([fn(controller!.signal), timeoutPromise(opts.timeout)])
-					: fn()
-			resolve(await promise)
+			if (opts.timeout != null) {
+				const timeout = timeoutPromise(opts.timeout)
+
+				const result = await Promise.race([fn(controller!.signal), timeout.promise])
+				timeout.cancel()
+				resolve(result)
+			} else {
+				resolve(await fn())
+			}
 		} catch (error) {
 			if (controller != null) controller.abort()
 			reject(error)

@@ -1,6 +1,8 @@
 // oxlint-disable vitest/require-mock-type-parameters
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, type Mock, vi } from "vitest"
 
+import { TimeoutError } from "../error.ts"
+
 import { createLimiter } from "./limiter.ts"
 
 let spies: Mock[] = []
@@ -100,8 +102,24 @@ describe("Limiter", () => {
 			expect(limiter.queue).toEqual(0)
 		})
 
-		it("triggers AbortController if timeout is reached", async () => {
-			const limiter = createLimiter({ timeout: 100 })
+		it("does not reject if timeout is not reached", async () => {
+			const limiter = createLimiter({ timeout: 500 })
+
+			let signal: AbortSignal
+			const spy = vi.fn((sig) => {
+				signal = sig
+				return new Promise<void>((resolve) => setTimeout(resolve, 250))
+			})
+
+			const promise = limiter.run(spy)
+			await vi.advanceTimersByTimeAsync(1000)
+			await expect(promise).resolves.toBeUndefined()
+
+			expect(signal!.aborted).toBe(false)
+		})
+
+		it("rejects and triggers AbortController if timeout is reached", async () => {
+			const limiter = createLimiter({ timeout: 500 })
 
 			let signal: AbortSignal
 			const spy = vi.fn((sig) => {
@@ -109,10 +127,10 @@ describe("Limiter", () => {
 				return new Promise<void>((resolve) => setTimeout(resolve, 1000))
 			})
 
-			const promise = limiter.run(spy).catch(() => true)
-			await vi.advanceTimersByTimeAsync(100)
-			await promise
+			const promise = limiter.run(spy).catch(() => "rejected")
+			await vi.advanceTimersByTimeAsync(1000)
 
+			await expect(promise).resolves.toEqual("rejected")
 			expect(signal!.aborted).toBe(true)
 		})
 

@@ -18,6 +18,5 @@
 		// Extra types
 		"types": ["node"]
 	},
-	"include": ["./"],
-	"exclude": ["node_modules", "dist", "copy.ts"]
+	"include": ["./"]
 }

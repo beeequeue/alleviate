@@ -52,8 +52,9 @@ export default defineConfig({
 
 	env: { TEST: false },
 
+	target: "baseline-widely-available",
 	format: "esm",
-	platform: "node",
+	platform: "neutral",
 	minify: "dce-only",
 	dts: { oxc: true },
 	unbundle: true,

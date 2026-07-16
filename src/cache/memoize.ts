@@ -1,12 +1,6 @@
-import * as crypto from "node:crypto"
-
 import { identify } from "object-identity"
 
 type GenericSyncFn = (...args: any) => any
-
-function defaultParameterSerializer(params: unknown[]): string {
-	return crypto.hash("sha256", identify(params))
-}
 
 type MemoizeOptions<Fn extends GenericSyncFn> = {
 	max?: number
@@ -28,7 +22,7 @@ export function memoize<Fn extends GenericSyncFn>(fn: Fn, options?: MemoizeOptio
 
 	return ((...args) => {
 		const serializedArgs =
-			options?.serialize?.(...(args as any)) ?? defaultParameterSerializer(args)
+			options?.serialize != null ? options.serialize(...(args as any)) : identify(args)
 
 		if (cache.has(serializedArgs)) {
 			const cached = cache.get(serializedArgs)

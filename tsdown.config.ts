@@ -37,6 +37,7 @@ export const vendoredPathsPlugin = () =>
 export default defineConfig({
 	entry: [
 		"src/index.ts",
+		"src/cache/dataloader.ts",
 		"src/cache/lru.ts",
 		"src/cache/memoize.ts",
 		"src/cache/ttl-map.ts",

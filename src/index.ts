@@ -1,3 +1,4 @@
+export { createDataloader, type DataLoader, type DataLoaderOptions } from "./cache/dataloader.ts"
 export { createLRU, type LRU, type LRUOptions } from "./cache/lru.ts"
 export { memoize } from "./cache/memoize.ts"
 export { createTTLMap, type TTLMap } from "./cache/ttl-map.ts"

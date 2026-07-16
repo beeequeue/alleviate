@@ -29,6 +29,7 @@
 	],
 	"exports": {
 		".": "./dist/index.mjs",
+		"./cache/dataloader": "./dist/cache/dataloader.mjs",
 		"./cache/lru": "./dist/cache/lru.mjs",
 		"./cache/memoize": "./dist/cache/memoize.mjs",
 		"./cache/ttl-map": "./dist/cache/ttl-map.mjs",

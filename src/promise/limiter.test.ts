@@ -1,8 +1,6 @@
 // oxlint-disable vitest/require-mock-type-parameters
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, type Mock, vi } from "vitest"
 
-import { TimeoutError } from "../error.ts"
-
 import { createLimiter } from "./limiter.ts"
 
 let spies: Mock[] = []

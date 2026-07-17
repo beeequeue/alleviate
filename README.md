@@ -11,6 +11,7 @@
 - [memoize](#memoize) - Memoize a function, i.e. cache its results based on its parameters to skip re-computation.
 - [createQueue](#queue) - A simple FIFO promise queue.
 - [createLimiter](#limiter) - A more complex promise queue/limiter. Supports more advanced rate limiting than `Queue`.
+- [createDataLoader](#limiter) - DataLoader implementation similar to [`dataloader`](https://npmx.dev/dataloader)
 
 ### LRU
 
@@ -187,6 +188,29 @@ _updated 2026-06-22_
 <!-- REMOVE END -->
 
 <!-- REMOVE START -->
+
+### DataLoader
+
+Easily batch and cache async function calls (e.g. requests).
+
+```ts
+const dataloader = createDataLoader<string, number>({
+	// The loader function receives a batch of keys passed into `load` and `loadMany`
+	// and must returns an array where the items must match the order of the keys.
+	loader: async (keys: string[]): Promise<number[]> => {
+		const result = await fetchData(keys)
+		return keys.map((key) => result[key])
+	},
+	// Whether to cache results. Also accepts `Map`s.
+	cache: true,
+	// Allows customizing how the keys are serialized for caching. Defaults to `object-identity`.
+	cacheKeyFn: (key): string => key,
+	// Whether to cache errors *returned* by the loader (not the loader throwing)
+	cacheErrors: true,
+	// Whether to limit batch sizes and by how much. Defaults to no max batch size.
+	maxBatchSize: 25,
+})
+```
 
 ### todo
 

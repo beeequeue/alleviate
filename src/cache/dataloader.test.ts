@@ -5,13 +5,13 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest"
 
 import { BatchError } from "../error.ts"
 
-import { createDataloader } from "./dataloader.ts"
+import { createDataLoader } from "./dataloader.ts"
 
 describe("DataLoader", () => {
 	describe(".load()", () => {
 		it("returns a single value from the batch loader", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			const result = await dataloader.load(5)
 			expectTypeOf(result).toBeNumber()
@@ -22,7 +22,7 @@ describe("DataLoader", () => {
 
 		it("batches multiple loads in the same microtask", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			const promises = [1, 2, 3].map((k) => dataloader.load(k))
 			const results = await Promise.all(promises)
@@ -34,7 +34,7 @@ describe("DataLoader", () => {
 
 		it("caches results and does not call loader twice for the same key", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			await dataloader.load(1)
 			await dataloader.load(1)
@@ -45,7 +45,7 @@ describe("DataLoader", () => {
 
 		it("returns cached value synchronously on second call", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			const first = await dataloader.load(7)
 			expect(first).toBe(14)
@@ -57,7 +57,7 @@ describe("DataLoader", () => {
 
 		it("rejects when the loader returns an Error for a key", async () => {
 			const loader = vi.fn(async (_keys: number[]) => [new Error("not found")])
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			await expect(dataloader.load(1)).rejects.toThrow("not found")
 		})
@@ -65,7 +65,7 @@ describe("DataLoader", () => {
 		it("caches errors when cacheErrors is not `false`", async () => {
 			const error = new Error("not found")
 			const loader = vi.fn(async (_keys: number[]) => [error])
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			await expect(dataloader.load(1)).rejects.toBe(error)
 			await expect(dataloader.load(1)).rejects.toBe(error)
@@ -76,7 +76,7 @@ describe("DataLoader", () => {
 
 		it("does not cache errors when cacheErrors is `false`", async () => {
 			const loader = vi.fn(async (_keys: number[]) => [new Error("not found")])
-			const dataloader = createDataloader<number, number>({
+			const dataloader = createDataLoader<number, number>({
 				loader,
 				cacheErrors: false,
 			})
@@ -95,7 +95,7 @@ describe("DataLoader", () => {
 			const loader = vi.fn(async (keys: number[]) =>
 				keys.map((k) => (k === 2 ? new Error("bad key") : k * 10)),
 			)
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			const promises = [1, 2, 3].map((k) => dataloader.load(k).catch((e) => e))
 			const results = await Promise.all(promises)
@@ -110,7 +110,7 @@ describe("DataLoader", () => {
 			const loader = vi.fn(async (_keys: number[]): Promise<number[]> => {
 				throw new Error("testing loader throwing")
 			})
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			await expect(dataloader.load(1)).rejects.toThrow(BatchError)
 			expect(loader).toHaveBeenCalledOnce()
@@ -121,7 +121,7 @@ describe("DataLoader", () => {
 	describe(".loadMany()", () => {
 		it("returns an array of values for multiple keys", async () => {
 			const loader = vi.fn(async (keys: string[]) => keys.map((k) => k.toUpperCase()))
-			const dataloader = createDataloader<string, string>({ loader })
+			const dataloader = createDataLoader<string, string>({ loader })
 
 			const results = await dataloader.loadMany(["a", "b", "c"])
 			expectTypeOf(results).toBeArray()
@@ -132,7 +132,7 @@ describe("DataLoader", () => {
 			const loader = vi.fn(async (keys: string[]) =>
 				keys.map((k) => (k === "bad" ? new Error("nope") : k.toUpperCase())),
 			)
-			const dataloader = createDataloader<string, string>({ loader })
+			const dataloader = createDataLoader<string, string>({ loader })
 
 			const results = await dataloader.loadMany(["good", "bad", "ok"])
 			expect(results).toHaveLength(3)
@@ -145,7 +145,7 @@ describe("DataLoader", () => {
 			const loader = vi.fn(async (_keys: number[]): Promise<number[]> => {
 				throw new Error("testing loader throwing")
 			})
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			const results = await dataloader.loadMany([1, 2])
 
@@ -160,7 +160,7 @@ describe("DataLoader", () => {
 	describe("batching", () => {
 		it("respects maxBatchSize and processes remaining queue in a second batch", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({
+			const dataloader = createDataLoader<number, number>({
 				loader,
 				maxBatchSize: 3,
 			})
@@ -182,7 +182,7 @@ describe("DataLoader", () => {
 				}
 				return keys.map((k) => k * 2)
 			})
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			const p1 = dataloader.load(1)
 			const p2 = dataloader.load(2)
@@ -202,7 +202,7 @@ describe("DataLoader", () => {
 		it("creates a new microtask for items added mid-batch", async () => {
 			const batchCalls: number[][] = []
 			const ref = {} as {
-				dataloader: ReturnType<typeof createDataloader<number, number>>
+				dataloader: ReturnType<typeof createDataLoader<number, number>>
 			}
 			let midBatchPromise: Promise<number> | undefined
 			const loader = vi.fn(async (keys: number[]) => {
@@ -213,7 +213,7 @@ describe("DataLoader", () => {
 				}
 				return keys.map((k) => k * 2)
 			})
-			ref.dataloader = createDataloader<number, number>({ loader })
+			ref.dataloader = createDataLoader<number, number>({ loader })
 
 			const results = await Promise.all([ref.dataloader.load(1), ref.dataloader.load(2)])
 			expect(results).toEqual([2, 4])
@@ -231,7 +231,7 @@ describe("DataLoader", () => {
 	describe("caching", () => {
 		it("disables caching when cache is false", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({
+			const dataloader = createDataLoader<number, number>({
 				loader,
 				cache: false,
 			})
@@ -245,7 +245,7 @@ describe("DataLoader", () => {
 		it("uses a custom cache Map when provided", async () => {
 			const customCache = new Map<string, number>()
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({
+			const dataloader = createDataLoader<number, number>({
 				loader,
 				cache: customCache,
 			})
@@ -262,7 +262,7 @@ describe("DataLoader", () => {
 		it("uses a custom cacheKeyFn for cache keys", async () => {
 			const cacheKeyFn = vi.fn((k: number) => `key:${k}`)
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({
+			const dataloader = createDataLoader<number, number>({
 				loader,
 				cacheKeyFn,
 			})
@@ -274,7 +274,7 @@ describe("DataLoader", () => {
 
 		it("shares a single promise for concurrent loads of the same key", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			const [a, b] = await Promise.all([dataloader.load(1), dataloader.load(1)])
 
@@ -288,7 +288,7 @@ describe("DataLoader", () => {
 	describe(".prime()", () => {
 		it("stores a value in the cache without calling the loader", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			dataloader.prime(5, 99)
 			const result = await dataloader.load(5)
@@ -299,7 +299,7 @@ describe("DataLoader", () => {
 
 		it("does nothing when caching is disabled", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({
+			const dataloader = createDataLoader<number, number>({
 				loader,
 				cache: false,
 			})
@@ -315,7 +315,7 @@ describe("DataLoader", () => {
 	describe(".clear()", () => {
 		it("removes a single key from the cache", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			await dataloader.load(1)
 			expect(loader).toHaveBeenCalledOnce()
@@ -327,7 +327,7 @@ describe("DataLoader", () => {
 
 		it("does not remove other cached keys", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			await Promise.all([dataloader.load(1), dataloader.load(2)])
 			dataloader.clear(1)
@@ -340,7 +340,7 @@ describe("DataLoader", () => {
 	describe(".clearAll()", () => {
 		it("removes all keys from the cache", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
-			const dataloader = createDataloader<number, number>({ loader })
+			const dataloader = createDataLoader<number, number>({ loader })
 
 			await Promise.all([dataloader.load(1), dataloader.load(2)])
 			dataloader.clearAll()

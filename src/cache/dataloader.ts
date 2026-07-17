@@ -11,15 +11,20 @@ export interface DataLoader<Key, Value> {
 }
 
 export interface DataLoaderOptions<Key, Value> {
+	/**
+	 * The function that receives a batch of keys, and returns an array of the results.
+	 * The returned array *must* match the order of the keys.
+	 */
 	loader: (key: Key[]) => Promise<Array<Value | Error>>
 	/**
-	 * Pass a custom `Map` or set to `false` to disable automatic caching
-	 * @default true
+	 * Pass a custom `Map` or set to `false` to disable automatic caching. Defaults to `true`
 	 */
 	cache?: boolean | Map<string, Value | PromiseLike<Value>>
 	/** Customize cache key serialization. */
 	cacheKeyFn?: (key: Key) => string
+	/** Whether to cache errors *returned* from the loader (not the loader fn throwing). Defaults to `true` */
 	cacheErrors?: boolean
+	/** Max size of batch before splitting up calls to the loader. Defaults to infinite */
 	maxBatchSize?: number
 }
 
@@ -29,7 +34,7 @@ type QueueItem<Key, Value> = {
 	reject: (reason?: Error) => void
 }
 
-export function createDataloader<Key, Value>(
+export function createDataLoader<Key, Value>(
 	options: DataLoaderOptions<Key, Value>,
 ): DataLoader<Key, Value> {
 	const cacheMap: Map<string, Value | PromiseLike<Value> | Error> | null =

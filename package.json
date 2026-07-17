@@ -19,7 +19,7 @@
 	},
 	"version": "0.1.1",
 	"type": "module",
-	"packageManager": "pnpm@11.13.0",
+	"packageManager": "pnpm@11.13.1",
 	"engines": {
 		"node": "^22.11 || ^24 || ^26 || ^27"
 	},

@@ -185,8 +185,6 @@ _updated 2026-06-22_
 
 <!-- REMOVE END -->
 
-<!-- REMOVE START -->
-
 ### DataLoader
 
 Easily batch and cache async function calls (e.g. requests).

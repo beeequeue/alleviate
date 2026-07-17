@@ -55,17 +55,14 @@ export function createDataloader<Key, Value>(
 		return promise
 	}
 
-	const loadMany: DataLoader<Key, Value>["loadMany"] = async (keys) => {
-		const results: Array<Value | Error> = []
-		for (let i = 0; i < keys.length; i++) {
-			try {
-				results[i] = await load(keys[i]!)
-			} catch (error) {
-				results[i] = error instanceof Error ? error : new Error(String(error))
-			}
-		}
-		return results
-	}
+	const loadMany: DataLoader<Key, Value>["loadMany"] = (keys) =>
+		Promise.all(
+			Array.from(keys, (key) =>
+				load(key).catch((error: unknown) =>
+					error instanceof Error ? error : new Error(error?.toString()),
+				),
+			),
+		)
 
 	async function executeBatch() {
 		microtaskWaiting = false

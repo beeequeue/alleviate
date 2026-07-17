@@ -14,7 +14,6 @@ concurrency:
 
 jobs:
   select-mode:
-    name: Select Mode
     runs-on: ubuntu-latest
     outputs:
       mode: ${{ steps.select-mode.outputs.mode }}
@@ -38,7 +37,6 @@ jobs:
         uses: changesets/action/select-mode@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
 
   version:
-    name: Version
     needs: select-mode
     if: needs.select-mode.outputs.mode == 'version'
     runs-on: ubuntu-latest
@@ -63,7 +61,6 @@ jobs:
         uses: changesets/action/version@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
 
   pack:
-    name: Pack
     needs: select-mode
     if: needs.select-mode.outputs.mode == 'publish'
     runs-on: ubuntu-latest
@@ -94,7 +91,6 @@ jobs:
           publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
 
   publish:
-    name: Publish
     needs: pack
     runs-on: ubuntu-latest
     environment: npm
@@ -119,3 +115,4 @@ jobs:
         uses: changesets/action/publish@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
         with:
           pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
+          script: pnpm stage publish

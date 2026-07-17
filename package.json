@@ -17,7 +17,7 @@
 		"type": "git",
 		"url": "git+https://github.com/beeequeue/alleviate.git"
 	},
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"type": "module",
 	"packageManager": "pnpm@11.13.1",
 	"engines": {

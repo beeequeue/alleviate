@@ -1,6 +1,7 @@
 name: changesets-status
 
 on:
+  # zizmor: ignore[dangerous-triggers]
   pull_request_target:
 
 permissions: {} # require explicitly stating all permissions in each job
@@ -19,6 +20,8 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Generate status
         id: status

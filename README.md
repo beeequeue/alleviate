@@ -222,7 +222,7 @@ const dataloader = createDataLoader<string, number>({
   - [x] dataloader
 - limiting
   - [x] promise limiter
-    - [ ] change impl to remove interval, use last-run-timestamp instead
+    - [x] change impl to remove interval, use last-run-timestamp instead
     - [ ] support changing concurrency
     - [ ] support changing reservoir level
     - [ ] add example for complex rate limiting handling based on returned info from API

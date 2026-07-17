@@ -33,15 +33,15 @@ export interface Limiter<Timeout = false> {
 export interface LimiterOptions {
 	/** How many functions can be running concurrently. Defaults to `4`. */
 	concurrency?: number
-	/** How large the concurrency pool can be. Defaults to `concurrency`. */
+	/** How large the pool can be. Defaults to `concurrency`. */
 	pool?: number
-	/** How big the initial concurrency pool is. Defaults to `pool`. */
+	/** How big the initial pool is. Defaults to `pool`. */
 	initial?: number
-	/** How much is added to the concurrency pool every `refillInterval`. Defaults to `pool`. */
+	/** How much is added to the pool every `refillInterval`. Defaults to `pool`. */
 	refill?: number
-	/** How often in ms `refill` is added to the concurrency pool. Defaults to `1000`. */
+	/** How often in ms `refill` is added to the pool. Defaults to `1000`. */
 	refillInterval?: number
-	/** Whether to refill the concurrency pool past `pool`. Defaults to `false`. */
+	/** Whether to refill the pool past `pool`. Defaults to `false`. */
 	refillOverLimit?: boolean
 	/** Whether to reject the promise after `timeout` ms. Defaults to `null`, i.e. no timeout. */
 	timeout?: number
@@ -50,51 +50,75 @@ export interface LimiterOptions {
 export function createLimiter<Options extends LimiterOptions>(
 	opts: Options = {} as never,
 ): Limiter<Options["timeout"] extends number ? true : false> {
-	let concurrency = opts.concurrency ?? Math.round(navigator.hardwareConcurrency / 1.5)
-	let limit = opts.pool ?? concurrency
+	const concurrency = opts.concurrency ?? Math.round(navigator.hardwareConcurrency / 1.5)
+	const limit = opts.pool ?? concurrency
+	const refill = opts.refill ?? limit
+	const refillInterval = opts.refillInterval ?? 1000
+
 	let pool = opts.initial ?? limit
 	let active = 0
-	let refill = opts.refill ?? limit
-	let refillInterval = opts.refillInterval ?? 1000
-	let interval: number | null = null
+	let lastExecution = Date.now()
+	let refillTimer: ReturnType<typeof setTimeout> | null = null
 
 	let state: LimiterStatus = "idle"
 	const queue: QueueItem[] = []
 
 	function updateState() {
-		if (active === 0) {
-			state = "idle"
-		} else if (active < pool) {
-			state = "running"
-		} else if (active >= pool) {
+		if (queue.length > 0 && (pool === 0 || active >= concurrency)) {
 			state = "blocking"
+		} else if (active > 0) {
+			state = "running"
+		} else {
+			state = "idle"
 		}
 	}
 
-	function initRefillInterval() {
-		interval = setInterval(() => {
-			pool = !opts.refillOverLimit ? Math.min(pool + refill, limit) : pool + refill
-			if (queue.length === 0) return
+	function refillPool(now = Date.now()) {
+		const elapsed = now - lastExecution
+		const intervals = Math.floor(elapsed / refillInterval)
+
+		if (intervals === 0) return
+
+		const amount = intervals * refill
+
+		pool = opts.refillOverLimit ? pool + amount : Math.min(pool + amount, limit)
+
+		// Preserve any partial interval instead of resetting it.
+		lastExecution += intervals * refillInterval
+	}
+
+	function scheduleRefill() {
+		if (refillTimer != null || queue.length === 0 || pool > 0) {
+			return
+		}
+
+		const elapsed = Date.now() - lastExecution
+		const delay = Math.max(0, refillInterval - elapsed)
+
+		refillTimer = setTimeout(() => {
+			refillTimer = null
 			advance()
-		}, refillInterval) as unknown as number
+		}, delay)
 	}
 
 	function advance() {
-		if (interval == null) {
-			initRefillInterval()
-		}
+		refillPool()
 
 		while (queue.length !== 0 && pool > 0 && active < concurrency) {
 			pool--
 			active++
+			lastExecution = Date.now()
+
 			void executeQueueFn()
 		}
 
+		scheduleRefill()
 		updateState()
 	}
 
 	async function executeQueueFn() {
 		const { fn, resolve, reject } = queue.shift()!
+
 		// oxlint-disable-next-line no-undefined
 		const controller = opts.timeout != null ? new AbortController() : undefined
 
@@ -102,26 +126,29 @@ export function createLimiter<Options extends LimiterOptions>(
 			if (opts.timeout != null) {
 				const timeout = timeoutPromise(opts.timeout)
 
-				const result = await Promise.race([fn(controller!.signal), timeout.promise])
-				timeout.cancel()
-				resolve(result)
+				try {
+					const result = await Promise.race([fn(controller!.signal), timeout.promise])
+
+					resolve(result)
+				} finally {
+					timeout.cancel()
+				}
 			} else {
 				resolve(await fn())
 			}
 		} catch (error) {
-			if (controller != null) controller.abort()
+			controller?.abort()
 			reject(error)
+		} finally {
+			active--
+			advance()
 		}
-
-		active--
-		advance()
 	}
 
 	const run: Limiter["run"] = (fn) => {
 		const { promise, resolve, reject } = Promise.withResolvers<ReturnType<typeof fn>>()
 
 		queue.push({ fn, resolve, reject })
-
 		advance()
 
 		return promise as ReturnType<typeof fn>
@@ -138,6 +165,7 @@ export function createLimiter<Options extends LimiterOptions>(
 			return state
 		},
 		get pool() {
+			refillPool()
 			return pool
 		},
 		get queue() {

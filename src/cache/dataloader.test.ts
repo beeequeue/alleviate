@@ -62,6 +62,35 @@ describe("DataLoader", () => {
 			await expect(dataloader.load(1)).rejects.toThrow("not found")
 		})
 
+		it("caches errors when cacheErrors is not `false`", async () => {
+			const error = new Error("not found")
+			const loader = vi.fn(async (_keys: number[]) => [error])
+			const dataloader = createDataloader<number, number>({ loader })
+
+			await expect(dataloader.load(1)).rejects.toBe(error)
+			await expect(dataloader.load(1)).rejects.toBe(error)
+
+			expect(loader).toHaveBeenCalledOnce()
+			expect(loader).toHaveBeenCalledWith([1])
+		})
+
+		it("does not cache errors when cacheErrors is `false`", async () => {
+			const loader = vi.fn(async (_keys: number[]) => [new Error("not found")])
+			const dataloader = createDataloader<number, number>({
+				loader,
+				cacheErrors: false,
+			})
+
+			await expect(dataloader.load(1)).rejects.toThrow("not found")
+
+			expect(loader).toHaveBeenCalledTimes(1)
+			expect(loader).toHaveBeenNthCalledWith(1, [1])
+
+			await expect(dataloader.load(1)).rejects.toThrow("not found")
+			expect(loader).toHaveBeenCalledTimes(2)
+			expect(loader).toHaveBeenNthCalledWith(2, [1])
+		})
+
 		it("preserves order of results even with mixed errors and values", async () => {
 			const loader = vi.fn(async (keys: number[]) =>
 				keys.map((k) => (k === 2 ? new Error("bad key") : k * 10)),

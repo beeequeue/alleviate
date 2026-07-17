@@ -19,7 +19,7 @@ export interface DataLoaderOptions<Key, Value> {
 	cache?: boolean | Map<string, Value | PromiseLike<Value>>
 	/** Customize cache key serialization. */
 	cacheKeyFn?: (key: Key) => string
-	batch?: boolean // why would this be an option??
+	cacheErrors?: boolean
 	maxBatchSize?: number
 }
 
@@ -77,11 +77,18 @@ export function createDataloader<Key, Value>(
 
 			for (let i = 0; i < batch.length; i++) {
 				const result = results[i]!
+				const cacheKey = cacheKeyFn(batch[i]!.key)
+
 				if (result instanceof Error) {
-					cacheMap?.set(cacheKeyFn(batch[i]!.key), result)
+					if (options.cacheErrors !== false) {
+						cacheMap?.set(cacheKey, result)
+					} else {
+						cacheMap?.delete(cacheKey)
+					}
+
 					batch[i]!.reject(result)
 				} else {
-					cacheMap?.set(cacheKeyFn(batch[i]!.key), result)
+					cacheMap?.set(cacheKey, result)
 					batch[i]!.resolve(result)
 				}
 			}

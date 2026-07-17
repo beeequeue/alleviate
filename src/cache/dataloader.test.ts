@@ -3,6 +3,8 @@
 import { identify } from "object-identity"
 import { describe, expect, expectTypeOf, it, vi } from "vitest"
 
+import { BatchError } from "../error.ts"
+
 import { createDataloader } from "./dataloader.ts"
 
 describe("DataLoader", () => {
@@ -74,6 +76,17 @@ describe("DataLoader", () => {
 			expect((results[1] as Error).message).toBe("bad key")
 			expect(results[2]).toBe(30)
 		})
+
+		it("rejects when the loader throws", async () => {
+			const loader = vi.fn(async (_keys: number[]): Promise<number[]> => {
+				throw new Error("testing loader throwing")
+			})
+			const dataloader = createDataloader<number, number>({ loader })
+
+			await expect(dataloader.load(1)).rejects.toThrow(BatchError)
+			expect(loader).toHaveBeenCalledOnce()
+			expect(loader).toHaveBeenCalledWith([1])
+		})
 	})
 
 	describe(".loadMany()", () => {
@@ -97,6 +110,21 @@ describe("DataLoader", () => {
 			expect(results[0]).toBe("GOOD")
 			expect(results[1]).toBeInstanceOf(Error)
 			expect(results[2]).toBe("OK")
+		})
+
+		it("rejects when the loader throws", async () => {
+			const loader = vi.fn(async (_keys: number[]): Promise<number[]> => {
+				throw new Error("testing loader throwing")
+			})
+			const dataloader = createDataloader<number, number>({ loader })
+
+			const results = await dataloader.loadMany([1, 2])
+
+			expect(results).toHaveLength(2)
+			expect(results[0]).toBeInstanceOf(BatchError)
+			expect(results[1]).toBeInstanceOf(BatchError)
+			expect(loader).toHaveBeenCalledOnce()
+			expect(loader).toHaveBeenCalledWith([1, 2])
 		})
 	})
 

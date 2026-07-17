@@ -1,5 +1,7 @@
 import { identify } from "object-identity"
 
+import { BatchError } from "../error.ts"
+
 export interface DataLoader<Key, Value> {
 	load(key: Key): Promise<Value>
 	loadMany(keys: ArrayLike<Key>): Promise<Array<Value | Error>>
@@ -30,7 +32,7 @@ type QueueItem<Key, Value> = {
 export function createDataloader<Key, Value>(
 	options: DataLoaderOptions<Key, Value>,
 ): DataLoader<Key, Value> {
-	const cacheMap: Map<string, Value | PromiseLike<Value>> | null =
+	const cacheMap: Map<string, Value | PromiseLike<Value> | Error> | null =
 		options.cache !== false ? ((options.cache !== true ? options.cache : null) ?? new Map()) : null
 	const cacheKeyFn: (key: Key) => string = options.cacheKeyFn ?? identify
 
@@ -40,7 +42,9 @@ export function createDataloader<Key, Value>(
 	const load: DataLoader<Key, Value>["load"] = async (key) => {
 		const cacheKey = cacheKeyFn(key)
 		if (cacheMap?.has(cacheKey)) {
-			return cacheMap.get(cacheKey)!
+			const value = cacheMap.get(cacheKey)!
+
+			return value instanceof Error ? Promise.reject(value) : value
 		}
 
 		const { promise, resolve, reject } = Promise.withResolvers<Value>()
@@ -55,11 +59,11 @@ export function createDataloader<Key, Value>(
 		return promise
 	}
 
-	const loadMany: DataLoader<Key, Value>["loadMany"] = (keys) =>
+	const loadMany: DataLoader<Key, Value>["loadMany"] = async (keys) =>
 		Promise.all(
 			Array.from(keys, (key) =>
 				load(key).catch((error: unknown) =>
-					error instanceof Error ? error : new Error(error?.toString()),
+					error instanceof Error ? error : new Error(String(error)),
 				),
 			),
 		)
@@ -68,15 +72,23 @@ export function createDataloader<Key, Value>(
 		microtaskWaiting = false
 		const batch = queue.splice(0, options.maxBatchSize ?? queue.length)
 
-		const results = await options.loader(batch.map(({ key }) => key))
+		try {
+			const results = await options.loader(batch.map(({ key }) => key))
 
-		for (let i = 0; i < batch.length; i++) {
-			const result = results[i]!
-			if (result instanceof Error) {
-				batch[i]!.reject(result)
-			} else {
-				cacheMap?.set(cacheKeyFn(batch[i]!.key), result)
-				batch[i]!.resolve(result)
+			for (let i = 0; i < batch.length; i++) {
+				const result = results[i]!
+				if (result instanceof Error) {
+					cacheMap?.set(cacheKeyFn(batch[i]!.key), result)
+					batch[i]!.reject(result)
+				} else {
+					cacheMap?.set(cacheKeyFn(batch[i]!.key), result)
+					batch[i]!.resolve(result)
+				}
+			}
+		} catch (error) {
+			const batchError = new BatchError(error as Error)
+			for (let i = 0; i < batch.length; i++) {
+				batch[i]!.reject(batchError)
 			}
 		}
 

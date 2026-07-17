@@ -3,3 +3,9 @@ export class TimeoutError extends Error {
 		super(`Promise timed out after ${timeout}ms.`)
 	}
 }
+
+export class BatchError extends Error {
+	constructor(cause: Error) {
+		super(`Batch loader failed.`, { cause })
+	}
+}

@@ -169,8 +169,6 @@ const limiter = createLimiter({
 })
 ```
 
-<!-- REMOVE START -->
-
 <details>
 
 <summary>Comparisons</summary>
@@ -211,6 +209,8 @@ const dataloader = createDataLoader<string, number>({
 	maxBatchSize: 25,
 })
 ```
+
+<!-- REMOVE START -->
 
 ### todo
 

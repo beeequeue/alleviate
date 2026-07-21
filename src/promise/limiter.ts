@@ -74,6 +74,12 @@ export function createLimiter<Options extends LimiterOptions>(
 	}
 
 	function refillPool(now = Date.now()) {
+		if (refillInterval === 0) {
+			pool = opts.refillOverLimit ? pool + refill : Math.min(pool + refill, limit)
+			lastExecution = now
+			return
+		}
+
 		const elapsed = now - lastExecution
 		const intervals = Math.floor(elapsed / refillInterval)
 

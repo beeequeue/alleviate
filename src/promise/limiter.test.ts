@@ -151,6 +151,22 @@ describe("Limiter", () => {
 		expect(limiter.state).toBe("idle")
 	})
 
+	describe("regression", () => {
+		it("does not break if refillInterval is set to 0", async () => {
+			vi.useRealTimers()
+
+			const limiter = createLimiter({
+				refillInterval: 0,
+			})
+
+			const fn = vi.fn()
+			await limiter.run(fn)
+			await limiter.run(fn)
+
+			expect(fn).toHaveBeenCalledTimes(2)
+		}, 1500)
+	})
+
 	describe("refill", () => {
 		it("refills based on time since the latest execution", async () => {
 			const limiter = createLimiter({

@@ -12,6 +12,7 @@ minimumReleaseAgeExclude:
 overrides:
   lightningcss: "-"
   postcss: "-"
+  rolldown: 1.2.0
 
 savePrefix: ""
 

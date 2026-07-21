@@ -1,5 +1,11 @@
 # alleviate
 
+## 0.2.1
+
+### Patch Changes
+
+- [`85f24d3`](https://github.com/beeequeue/alleviate/commit/85f24d3b5f8555e9d477aea4342cac036191482e) Thanks [@beeequeue](https://github.com/beeequeue)! - Fixed Limiter infinite loop with `refillInterval: 0`
+
 ## 0.2.0
 
 ### Minor Changes

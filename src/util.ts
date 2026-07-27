@@ -1,10 +1,9 @@
-import { fnv1a64Base36 } from "fnv1a-64"
 import { identify } from "object-identity"
 
 import { TimeoutError } from "./error.ts"
 
 export function serializeUnknown(...args: unknown[]): string {
-	return fnv1a64Base36(identify(args))
+	return identify(args)
 }
 
 export function timeoutPromise(ms: number): { cancel: () => void; promise: Promise<never> } {

@@ -27,12 +27,18 @@ importers:
       '@e18e/eslint-plugin':
         specifier: 0.5.1
         version: 0.5.1(oxlint@1.75.0)
+      '@formatjs/fast-memoize':
+        specifier: 3.1.7
+        version: 3.1.7
       '@tsconfig/node26':
         specifier: 26.0.0
         version: 26.0.0
       '@tsconfig/strictest':
         specifier: 2.0.8
         version: 2.0.8
+      '@types/lodash.memoize':
+        specifier: 4.1.9
+        version: 4.1.9
       '@types/node':
         specifier: 26.1.1
         version: 26.1.1
@@ -45,12 +51,18 @@ importers:
       flru:
         specifier: 1.0.2
         version: 1.0.2
-      fnv1a-64:
-        specifier: 0.1.1
-        version: 0.1.1
       lint-staged:
         specifier: 17.2.0
         version: 17.2.0
+      lodash.memoize:
+        specifier: 4.1.2
+        version: 4.1.2
+      memoize:
+        specifier: 11.0.0
+        version: 11.0.0
+      memoize-one:
+        specifier: 6.0.0
+        version: 6.0.0
       object-identity:
         specifier: 0.2.3
         version: 0.2.3
@@ -187,6 +199,9 @@ packages:
 
   '@emnapi/wasi-threads@1.2.2':
     resolution: {integrity: sha512-c95qOXkHdydNKhscBTebqEC1CVAZpyqOfVfBzQ1qgzyl3gfeldUjIggDbIZgDKsHLgnsM+igH7TJ/eAasaVuMA==}
+
+  '@formatjs/fast-memoize@3.1.7':
+    resolution: {integrity: sha512-zXfhLpvA6T7+efdt9JLbBwZ00tT7NsBMDVnDu8rpHeNNv8KfRZAMo2gkG0k9lK/Nzc//3kJ9pImsfuJxk3KhUA==}
 
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
@@ -616,6 +631,12 @@ packages:
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
+  '@types/lodash.memoize@4.1.9':
+    resolution: {integrity: sha512-glY1nQuoqX4Ft8Uk+KfJudOD7DQbbEDF6k9XpGncaohW3RW4eSWBlx6AA0fZCrh40tZcQNH4jS/Oc59J6Eq+aw==}
+
+  '@types/lodash@4.17.24':
+    resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
+
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
 
@@ -1021,9 +1042,6 @@ packages:
     resolution: {integrity: sha512-kWyh8ADvHBFz6ua5xYOPnUroZTT/bwWfrCeL0Wj1dzG4/YOmOcfJ99W8dOVyyynJN35rZ9aCOtHChqQovV7yog==}
     engines: {node: '>=6'}
 
-  fnv1a-64@0.1.1:
-    resolution: {integrity: sha512-qMpkqWyaiNxwYG7Dt40Bxtp2wV6KW/1woXVJOEvR1KA2ffsZf8pyvlNwJgFHha3teh8iC3d4arvrJ0qTcU445A==}
-
   follow-redirects@1.16.0:
     resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
     engines: {node: '>=4.0'}
@@ -1109,12 +1127,22 @@ packages:
     resolution: {integrity: sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
+  lodash.memoize@4.1.2:
+    resolution: {integrity: sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==}
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
+
+  memoize-one@6.0.0:
+    resolution: {integrity: sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==}
+
+  memoize@11.0.0:
+    resolution: {integrity: sha512-cjsfZaC9b1clqPeIVMbb5dLHSXgdgGWGxdAU3oTUUkHiwWTKTBNnSmcqWJncNjYtBi3S8Rp0c5GIiyGztR8TRA==}
+    engines: {node: '>=22'}
 
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
@@ -1123,6 +1151,10 @@ packages:
   mime-types@2.1.35:
     resolution: {integrity: sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==}
     engines: {node: '>= 0.6'}
+
+  mimic-function@5.0.1:
+    resolution: {integrity: sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==}
+    engines: {node: '>=18'}
 
   module-replacements@3.0.0-beta.8:
     resolution: {integrity: sha512-sc8TepP9elxoOBXEpxmhPzKKjTjbswHVcmsKGbgvm3k6jZlLu/WMV/Lfmga6IGMgHU/V3WtY2s6VEgM4nTElUQ==}
@@ -1637,6 +1669,8 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@formatjs/fast-memoize@3.1.7': {}
+
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
   '@manypkg/find-root@3.1.0':
@@ -1875,6 +1909,12 @@ snapshots:
   '@types/deep-eql@4.0.2': {}
 
   '@types/estree@1.0.9': {}
+
+  '@types/lodash.memoize@4.1.9':
+    dependencies:
+      '@types/lodash': 4.17.24
+
+  '@types/lodash@4.17.24': {}
 
   '@types/node@26.1.1':
     dependencies:
@@ -2154,8 +2194,6 @@ snapshots:
 
   flru@1.0.2: {}
 
-  fnv1a-64@0.1.1: {}
-
   follow-redirects@1.16.0(debug@4.4.3):
     optionalDependencies:
       debug: 4.4.3
@@ -2243,17 +2281,27 @@ snapshots:
     dependencies:
       p-locate: 6.0.0
 
+  lodash.memoize@4.1.2: {}
+
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   math-intrinsics@1.1.0: {}
 
+  memoize-one@6.0.0: {}
+
+  memoize@11.0.0:
+    dependencies:
+      mimic-function: 5.0.1
+
   mime-db@1.52.0: {}
 
   mime-types@2.1.35:
     dependencies:
       mime-db: 1.52.0
+
+  mimic-function@5.0.1: {}
 
   module-replacements@3.0.0-beta.8: {}
 

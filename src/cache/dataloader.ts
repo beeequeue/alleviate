@@ -21,7 +21,7 @@ export interface DataLoaderOptions<Key, Value> {
 	cache?: boolean | Map<string, Value | PromiseLike<Value>>
 	/**
 	 * Customize cache key serialization.
-	 * Defaults to `fnv1a-64(object-identity(data))`
+	 * Defaults to `object-identity(data)`
 	 */
 	cacheKeyFn?: (key: Key) => string
 	/** Whether to cache errors *returned* from the loader (not the loader fn throwing). Defaults to `true` */

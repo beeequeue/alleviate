@@ -48,7 +48,7 @@ export default defineConfig({
 	exports: true,
 	fixedExtension: true,
 	deps: {
-		onlyBundle: ["fnv1a-64", "object-identity"],
+		onlyBundle: ["object-identity"],
 	},
 
 	env: { TEST: false },

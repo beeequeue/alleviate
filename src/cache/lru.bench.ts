@@ -1,73 +1,87 @@
 // oxlint-disable vitest/expect-expect
+
+import { createLRU } from "alleviate"
+import flru from "flru"
 import { it } from "vitest"
 
-import { createLRU } from "./lru.ts"
+const keys = Array.from({ length: 1_000 }, (_, index) => index.toString())
+const missingKeys = Array.from({ length: 1_000 }, (_, index) => `missing-${index}`)
 
-const generateValue = (uuids = 1) => {
-	let str = ""
-	for (let i = 0; i < uuids; i++) {
-		str += crypto.randomUUID()
-	}
-	return str
+function createPopulatedLRU() {
+	const lru = createLRU<string, string>({ max: keys.length })
+	for (const key of keys) lru.set(key, key)
+	return lru
 }
 
-it("createLRU()", async ({ bench }) => {
-	const lru = createLRU({ max: 10_000 })
-	const keys: string[] = []
-	for (let i = 0; i < 10_000; i++) {
-		lru.set(crypto.randomUUID(), generateValue(3))
-	}
+it("create", async ({ bench }) => {
+	await bench("createLRU", () => createLRU({ max: 1_000 })).run()
+})
 
-	await bench("get 100 items", async () => {
-		let v
-		for (let i = 0; i < 100; i++) {
-			v = lru.get(keys[i]!)
-		}
+it("get 1,000 existing keys", async ({ bench }) => {
+	const lru = createPopulatedLRU()
 
-		return v
+	await bench("createLRU.get hit", () => {
+		let value: string | null = null
+		for (const key of keys) value = lru.get(key)
+		return value
 	}).run()
+})
 
-	await bench("get 10_000 items", async () => {
-		let v
-		for (let i = 0; i < 10_000; i++) {
-			v = lru.get(keys[i]!)
-		}
+it("get 1,000 missing keys", async ({ bench }) => {
+	const lru = createPopulatedLRU()
 
-		return v
+	await bench("createLRU.get miss", () => {
+		let value: string | null = null
+		for (const key of missingKeys) value = lru.get(key)
+		return value
 	}).run()
+})
 
-	await bench("get 10_000 non-existant", async () => {
-		let v
-		for (let i = 0; i < 10_000; i++) {
-			v = lru.get(i.toString())
-		}
+it("has 1,000 existing keys", async ({ bench }) => {
+	const lru = createPopulatedLRU()
 
-		return v
+	await bench("createLRU.has", () => {
+		let exists = false
+		for (const key of keys) exists = lru.has(key)
+		return exists
 	}).run()
+})
 
-	await bench("has 10_000", async () => {
-		let v
-		for (let i = 0; i < 10_000; i++) {
-			v = lru.has(keys[i]!)
-		}
-
-		return v
-	}).run()
-
-	await bench("set 5000", async () => {
-		for (let i = 0; i < 5_000; i++) {
-			lru.set(keys[i]!, i.toString())
-		}
-
+it("set 1,000 keys", async ({ bench }) => {
+	await bench("createLRU.set", () => {
+		const lru = createLRU<string, string>({ max: keys.length })
+		for (const key of keys) lru.set(key, key)
 		return lru
 	}).run()
+})
 
-	const evictionLru = createLRU({ max: 1000 })
-	await bench("set 5000 with max=1000", async () => {
-		for (let i = 0; i < 5_000; i++) {
-			evictionLru.set(keys[i]!, i.toString())
-		}
-
-		return evictionLru
+it("set 1,000 keys with eviction", async ({ bench }) => {
+	await bench("createLRU.set with eviction", () => {
+		const lru = createLRU<string, string>({ max: 100 })
+		for (const key of keys) lru.set(key, key)
+		return lru
 	}).run()
+})
+
+/* oxlint-disable vitest/no-disabled-tests, vitest/valid-title -- comparison benchmarks do not run on CodSpeed */
+const comparison = it.skipIf(
+	process.env.CODSPEED != null || process.env.CODSPEED_RUNNER_MODE != null,
+)
+/* oxlint-enable vitest/no-disabled-tests, vitest/valid-title */
+
+comparison("compare with flru", async ({ bench }) => {
+	const alleviate = () => {
+		const lru = createLRU<string, string>({ max: keys.length })
+		for (const key of keys) lru.set(key, key)
+		for (const key of keys) lru.get(key)
+		return lru
+	}
+	const upstream = () => {
+		const lru = flru(keys.length)
+		for (const key of keys) lru.set(key, key)
+		for (const key of keys) lru.get(key)
+		return lru
+	}
+
+	await bench.compare(bench("alleviate", alleviate), bench("flru", upstream))
 })

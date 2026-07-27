@@ -1,3 +1,4 @@
+import codspeed from "@codspeed/vitest-plugin"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
@@ -8,4 +9,6 @@ export default defineConfig({
 		mockReset: true,
 		restoreMocks: true,
 	},
+
+	plugins: [codspeed()],
 })

@@ -3,7 +3,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest"
 
 import { BatchError } from "../error.ts"
-import { identify } from "object-identity"
 
 import { createDataLoader } from "./dataloader.ts"
 
@@ -255,7 +254,7 @@ describe("DataLoader", () => {
 		})
 
 		it("uses a custom cache Map when provided", async () => {
-			const customCache = new Map<string, number>()
+			const customCache = new Map<number, number>()
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
 			const dataloader = createDataLoader<number, number>({
 				loader,
@@ -264,7 +263,7 @@ describe("DataLoader", () => {
 
 			await dataloader.load(1)
 			expect(customCache.size).toBe(1)
-			expect(customCache.has(identify([1]))).toBe(true)
+			expect(customCache.has(1)).toBe(true)
 
 			// Second load should use cache, not call loader again
 			await dataloader.load(1)
@@ -272,7 +271,7 @@ describe("DataLoader", () => {
 		})
 
 		it("uses a custom cacheKeyFn for cache keys", async () => {
-			const cacheKeyFn = vi.fn((k: number) => `key:${k}`)
+			const cacheKeyFn = vi.fn((k: number) => k % 10)
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
 			const dataloader = createDataLoader<number, number>({
 				loader,
@@ -281,7 +280,7 @@ describe("DataLoader", () => {
 
 			await dataloader.load(42)
 			expect(cacheKeyFn).toHaveBeenCalledWith(42)
-			expect(cacheKeyFn).toHaveReturnedWith("key:42")
+			expect(cacheKeyFn).toHaveReturnedWith(2)
 		})
 
 		it("shares a single promise for concurrent loads of the same key", async () => {
@@ -294,6 +293,15 @@ describe("DataLoader", () => {
 			expect(b).toBe(2)
 			expect(loader).toHaveBeenCalledOnce()
 			expect(loader).toHaveBeenCalledWith([1])
+		})
+
+		it("shares cached results between structurally equal objects", async () => {
+			const loader = vi.fn(async (keys: { id: number }[]) => keys.map(({ id }) => id * 2))
+			const dataloader = createDataLoader<{ id: number }, number>({ loader })
+
+			expect(await dataloader.load({ id: 1 })).toBe(2)
+			expect(await dataloader.load({ id: 1 })).toBe(2)
+			expect(loader).toHaveBeenCalledOnce()
 		})
 	})
 

@@ -1,5 +1,5 @@
 import { BatchError } from "../error.ts"
-import { serializeUnknown } from "../util.ts"
+import { identify } from "object-identity"
 
 export interface DataLoader<Key, Value> {
 	load(key: Key): Promise<Value>
@@ -21,7 +21,7 @@ export interface DataLoaderOptions<Key, Value> {
 	cache?: boolean | Map<string, Value | PromiseLike<Value>>
 	/**
 	 * Customize cache key serialization.
-	 * Defaults to `object-identity(data)`
+	 * Defaults to `object-identity(data)`.
 	 */
 	cacheKeyFn?: (key: Key) => string
 	/** Whether to cache errors *returned* from the loader (not the loader fn throwing). Defaults to `true` */
@@ -30,38 +30,39 @@ export interface DataLoaderOptions<Key, Value> {
 	maxBatchSize?: number
 }
 
-type QueueItem<Key, Value> = {
-	key: Key
-	resolve: (value: Value) => void
-	reject: (reason?: Error) => void
-}
-
 export function createDataLoader<Key, Value>(
 	options: DataLoaderOptions<Key, Value>,
 ): DataLoader<Key, Value> {
 	const cacheMap: Map<string, Value | PromiseLike<Value> | Error> | null =
 		options.cache !== false ? ((options.cache !== true ? options.cache : null) ?? new Map()) : null
-	const cacheKeyFn: (key: Key) => string = options.cacheKeyFn ?? serializeUnknown
+	const cacheKeyFn: (key: Key) => string = options.cacheKeyFn ?? ((key) => identify([key]))
+	const { loader, cacheErrors = true, maxBatchSize } = options
 
-	const queue: QueueItem<Key, Value>[] = []
+	let queuedKeys: Key[] = []
+	let queuedCacheKeys: string[] = []
+	let queuedResolves: ((value: Value) => void)[] = []
+	let queuedRejects: ((reason?: Error) => void)[] = []
 	let microtaskWaiting = false
 
-	const load: DataLoader<Key, Value>["load"] = async (key) => {
+	const load: DataLoader<Key, Value>["load"] = (key) => {
 		const cacheKey = cacheKeyFn(key)
 		if (cacheMap?.has(cacheKey)) {
-			const value = cacheMap.get(cacheKey)!
-
-			return value instanceof Error ? Promise.reject(value) : value
+			const cached = cacheMap.get(cacheKey)!
+			return cached instanceof Error ? Promise.reject(cached) : Promise.resolve(cached)
 		}
 
 		const { promise, resolve, reject } = Promise.withResolvers<Value>()
 
-		if (!microtaskWaiting) {
-			queueMicrotask(executeBatch)
-			microtaskWaiting = true
-		}
-		queue.push({ key, resolve, reject })
+		queuedKeys.push(key)
+		queuedCacheKeys.push(cacheKey)
+		queuedResolves.push(resolve)
+		queuedRejects.push(reject)
 		cacheMap?.set(cacheKey, promise)
+
+		if (!microtaskWaiting) {
+			microtaskWaiting = true
+			queueMicrotask(executeBatch)
+		}
 
 		return promise
 	}
@@ -75,39 +76,56 @@ export function createDataLoader<Key, Value>(
 			),
 		)
 
-	async function executeBatch() {
-		microtaskWaiting = false
-		const batch = queue.splice(0, options.maxBatchSize ?? queue.length)
+	function executeBatch() {
+		const keys = queuedKeys
+		const cacheKeys = queuedCacheKeys
+		const resolves = queuedResolves
+		const rejects = queuedRejects
+		queuedKeys = []
+		queuedCacheKeys = []
+		queuedResolves = []
+		queuedRejects = []
 
-		try {
-			const results = await options.loader(batch.map(({ key }) => key))
-
-			for (let i = 0; i < batch.length; i++) {
-				const result = results[i]!
-				const cacheKey = cacheKeyFn(batch[i]!.key)
-
-				if (result instanceof Error) {
-					if (options.cacheErrors !== false) {
-						cacheMap?.set(cacheKey, result)
-					} else {
-						cacheMap?.delete(cacheKey)
+		const dispatch = (keys: Key[], cacheKeys: string[], resolves: ((value: Value) => void)[], rejects: ((reason?: Error) => void)[]) => {
+			void loader(keys).then(
+				(results) => {
+					for (let i = 0; i < keys.length; i++) {
+						const result = results[i]!
+						if (result instanceof Error) {
+							if (!cacheErrors) cacheMap?.delete(cacheKeys[i]!)
+							rejects[i]!(result)
+						} else {
+							resolves[i]!(result)
+						}
 					}
+					return null
+				},
+				(error: unknown) => {
+					const batchError = new BatchError(error as Error)
+					for (let i = 0; i < keys.length; i++) {
+						cacheMap?.delete(cacheKeys[i]!)
+						rejects[i]!(batchError)
+					}
+					return null
+				},
+			)
+		}
 
-					batch[i]!.reject(result)
-				} else {
-					cacheMap?.set(cacheKey, result)
-					batch[i]!.resolve(result)
-				}
-			}
-		} catch (error) {
-			const batchError = new BatchError(error as Error)
-			for (let i = 0; i < batch.length; i++) {
-				batch[i]!.reject(batchError)
+		if (maxBatchSize == null) {
+			dispatch(keys, cacheKeys, resolves, rejects)
+		} else {
+			for (let start = 0; start < keys.length; start += maxBatchSize) {
+				dispatch(
+					keys.slice(start, start + maxBatchSize),
+					cacheKeys.slice(start, start + maxBatchSize),
+					resolves.slice(start, start + maxBatchSize),
+					rejects.slice(start, start + maxBatchSize),
+				)
 			}
 		}
 
-		// oxlint-disable-next-line typescript/no-unnecessary-condition
-		if (!microtaskWaiting && queue.length !== 0) {
+		microtaskWaiting = false
+		if (queuedKeys.length !== 0) {
 			queueMicrotask(executeBatch)
 			microtaskWaiting = true
 		}

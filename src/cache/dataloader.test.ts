@@ -3,7 +3,7 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest"
 
 import { BatchError } from "../error.ts"
-import { serializeUnknown } from "../util.ts"
+import { identify } from "object-identity"
 
 import { createDataLoader } from "./dataloader.ts"
 
@@ -115,6 +115,18 @@ describe("DataLoader", () => {
 			await expect(dataloader.load(1)).rejects.toThrow(BatchError)
 			expect(loader).toHaveBeenCalledOnce()
 			expect(loader).toHaveBeenCalledWith([1])
+		})
+
+		it("does not cache a failed loader batch", async () => {
+			const loader = vi
+				.fn<(keys: number[]) => Promise<number[]>>()
+				.mockRejectedValueOnce(new Error("temporary failure"))
+				.mockImplementation(async (keys) => keys.map((key) => key * 2))
+			const dataloader = createDataLoader<number, number>({ loader })
+
+			await expect(dataloader.load(1)).rejects.toThrow(BatchError)
+			expect(await dataloader.load(1)).toBe(2)
+			expect(loader).toHaveBeenCalledTimes(2)
 		})
 	})
 
@@ -252,7 +264,7 @@ describe("DataLoader", () => {
 
 			await dataloader.load(1)
 			expect(customCache.size).toBe(1)
-			expect(customCache.has(serializeUnknown(1))).toBe(true)
+			expect(customCache.has(identify([1]))).toBe(true)
 
 			// Second load should use cache, not call loader again
 			await dataloader.load(1)

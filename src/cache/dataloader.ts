@@ -1,6 +1,5 @@
-import { identify } from "object-identity"
-
 import { BatchError } from "../error.ts"
+import { serializeUnknown } from "../util.ts"
 
 export interface DataLoader<Key, Value> {
 	load(key: Key): Promise<Value>
@@ -49,9 +48,7 @@ export function createDataLoader<Key, Value, CacheKey = Key>(
 	let microtaskWaiting = false
 
 	const getCacheKey = (key: Key): CacheKey =>
-		cacheKeyFn == null
-			? ((typeof key === "object" && key != null ? identify(key) : key) as unknown as CacheKey)
-			: cacheKeyFn(key)
+		cacheKeyFn == null ? (serializeUnknown(key) as CacheKey) : cacheKeyFn(key)
 
 	const load: DataLoader<Key, Value>["load"] = (key) => {
 		const cacheKey = getCacheKey(key)

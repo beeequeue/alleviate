@@ -32,6 +32,7 @@ export interface DataLoaderOptions<Key, Value> {
 
 type QueueItem<Key, Value> = {
 	key: Key
+	cacheKey: string
 	resolve: (value: Value) => void
 	reject: (reason?: Error) => void
 }
@@ -39,19 +40,17 @@ type QueueItem<Key, Value> = {
 export function createDataLoader<Key, Value>(
 	options: DataLoaderOptions<Key, Value>,
 ): DataLoader<Key, Value> {
-	const cacheMap: Map<string, Value | PromiseLike<Value> | Error> | null =
+	const cacheMap: Map<string, PromiseLike<Value | Error>> | null =
 		options.cache !== false ? ((options.cache !== true ? options.cache : null) ?? new Map()) : null
 	const cacheKeyFn: (key: Key) => string = options.cacheKeyFn ?? serializeUnknown
 
 	const queue: QueueItem<Key, Value>[] = []
 	let microtaskWaiting = false
 
-	const load: DataLoader<Key, Value>["load"] = async (key) => {
+	const load: DataLoader<Key, Value>["load"] = (key): Promise<Value> => {
 		const cacheKey = cacheKeyFn(key)
 		if (cacheMap?.has(cacheKey)) {
-			const value = cacheMap.get(cacheKey)!
-
-			return value instanceof Error ? Promise.reject(value) : value
+			return cacheMap.get(cacheKey) as Promise<Value>
 		}
 
 		const { promise, resolve, reject } = Promise.withResolvers<Value>()
@@ -60,7 +59,7 @@ export function createDataLoader<Key, Value>(
 			queueMicrotask(executeBatch)
 			microtaskWaiting = true
 		}
-		queue.push({ key, resolve, reject })
+		queue.push({ key, cacheKey, resolve, reject })
 		cacheMap?.set(cacheKey, promise)
 
 		return promise
@@ -84,18 +83,17 @@ export function createDataLoader<Key, Value>(
 
 			for (let i = 0; i < batch.length; i++) {
 				const result = results[i]!
-				const cacheKey = cacheKeyFn(batch[i]!.key)
 
 				if (result instanceof Error) {
 					if (options.cacheErrors !== false) {
-						cacheMap?.set(cacheKey, result)
+						cacheMap?.set(batch[i]!.cacheKey, Promise.reject(result))
 					} else {
-						cacheMap?.delete(cacheKey)
+						cacheMap?.delete(batch[i]!.cacheKey)
 					}
 
 					batch[i]!.reject(result)
 				} else {
-					cacheMap?.set(cacheKey, result)
+					cacheMap?.set(batch[i]!.cacheKey, Promise.resolve(result))
 					batch[i]!.resolve(result)
 				}
 			}
@@ -117,7 +115,7 @@ export function createDataLoader<Key, Value>(
 		load,
 		loadMany,
 		prime(key: Key, value: Value | PromiseLike<Value>) {
-			cacheMap?.set(cacheKeyFn(key), value)
+			cacheMap?.set(cacheKeyFn(key), Promise.resolve(value))
 		},
 		clear(key: Key) {
 			cacheMap?.delete(cacheKeyFn(key))

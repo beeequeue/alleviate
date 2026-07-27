@@ -1,73 +1,81 @@
-// oxlint-disable vitest/expect-expect
-import { it } from "vitest"
+import { createLRU } from "alleviate"
+import flru from "flru"
+import { bench, describe } from "vitest"
 
-import { createLRU } from "./lru.ts"
+const keys = Array.from({ length: 1_000 }, (_, index) => index.toString())
+const missingKeys = Array.from({ length: 1_000 }, (_, index) => `missing-${index}`)
 
-const generateValue = (uuids = 1) => {
-	let str = ""
-	for (let i = 0; i < uuids; i++) {
-		str += crypto.randomUUID()
-	}
-	return str
+function createPopulatedLRU() {
+	const lru = createLRU<string, string>({ max: keys.length })
+	for (const key of keys) lru.set(key, key)
+	return lru
 }
 
-it("createLRU()", async ({ bench }) => {
-	const lru = createLRU({ max: 10_000 })
-	const keys: string[] = []
-	for (let i = 0; i < 10_000; i++) {
-		lru.set(crypto.randomUUID(), generateValue(3))
-	}
+// @ts-expect-error: unused, but needed for deoptimization
+// oxlint-disable-next-line no-unused-vars
+var result: any
 
-	await bench("get 100 items", async () => {
-		let v
-		for (let i = 0; i < 100; i++) {
-			v = lru.get(keys[i]!)
-		}
-
-		return v
-	}).run()
-
-	await bench("get 10_000 items", async () => {
-		let v
-		for (let i = 0; i < 10_000; i++) {
-			v = lru.get(keys[i]!)
-		}
-
-		return v
-	}).run()
-
-	await bench("get 10_000 non-existant", async () => {
-		let v
-		for (let i = 0; i < 10_000; i++) {
-			v = lru.get(i.toString())
-		}
-
-		return v
-	}).run()
-
-	await bench("has 10_000", async () => {
-		let v
-		for (let i = 0; i < 10_000; i++) {
-			v = lru.has(keys[i]!)
-		}
-
-		return v
-	}).run()
-
-	await bench("set 5000", async () => {
-		for (let i = 0; i < 5_000; i++) {
-			lru.set(keys[i]!, i.toString())
-		}
-
-		return lru
-	}).run()
-
-	const evictionLru = createLRU({ max: 1000 })
-	await bench("set 5000 with max=1000", async () => {
-		for (let i = 0; i < 5_000; i++) {
-			evictionLru.set(keys[i]!, i.toString())
-		}
-
-		return evictionLru
-	}).run()
+describe("create", () => {
+	bench("createLRU", () => {
+		result = createLRU({ max: 1_000 })
+	})
 })
+
+describe("get 1,000 existing keys", () => {
+	const lru = createPopulatedLRU()
+
+	bench("createLRU.get hit", () => {
+		for (const key of keys) result = lru.get(key)
+	})
+})
+
+describe("get 1,000 missing keys", () => {
+	const lru = createPopulatedLRU()
+
+	bench("createLRU.get miss", () => {
+		for (const key of missingKeys) result = lru.get(key)
+	})
+})
+
+describe("has 1,000 existing keys", () => {
+	const lru = createPopulatedLRU()
+
+	bench("createLRU.has", () => {
+		for (const key of keys) result = lru.has(key)
+	})
+})
+
+describe("set 1,000 keys", () => {
+	bench("createLRU.set", () => {
+		const lru = createLRU<string, string>({ max: keys.length })
+		for (const key of keys) lru.set(key, key)
+		result = lru
+	})
+})
+
+describe("set 1,000 keys with eviction", () => {
+	bench("createLRU.set with eviction", () => {
+		const lru = createLRU<string, string>({ max: 100 })
+		for (const key of keys) lru.set(key, key)
+		result = lru
+	})
+})
+
+describe.skipIf(process.env.CODSPEED != null || process.env.CODSPEED_RUNNER_MODE != null)(
+	"compare with flru",
+	() => {
+		bench("alleviate", () => {
+			const lru = createLRU<string, string>({ max: keys.length })
+			for (const key of keys) lru.set(key, key)
+			for (const key of keys) lru.get(key)
+			result = lru
+		})
+
+		bench("flru", () => {
+			const lru = flru(keys.length)
+			for (const key of keys) lru.set(key, key)
+			for (const key of keys) lru.get(key)
+			result = lru
+		})
+	},
+)

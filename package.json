@@ -46,6 +46,7 @@
 		"pre-commit": "./node_modules/.bin/lint-staged"
 	},
 	"scripts": {
+		"bench": "vitest bench",
 		"build": "tsdown",
 		"lint": "oxlint",
 		"lint:format": "oxfmt --check",
@@ -55,10 +56,14 @@
 	"devDependencies": {
 		"@changesets/changelog-github": "1.0.0-next.8",
 		"@changesets/cli": "3.0.0-next.10",
+		"@codspeed/vitest-plugin": "5.7.1",
 		"@e18e/eslint-plugin": "0.5.1",
 		"@tsconfig/node26": "26.0.0",
 		"@tsconfig/strictest": "2.0.8",
 		"@types/node": "26.1.1",
+		"dataloader": "2.2.3",
+		"dldr": "0.0.10",
+		"flru": "1.0.2",
 		"fnv1a-64": "0.1.1",
 		"lint-staged": "17.2.0",
 		"object-identity": "0.2.3",
@@ -69,7 +74,7 @@
 		"simple-git-hooks": "2.13.1",
 		"tsdown": "0.22.14",
 		"typescript": "7.0.2",
-		"vitest": "5.0.0-beta.6"
+		"vitest": "4.1.10"
 	},
 	"inlinedDependencies": {
 		"fnv1a-64": "0.1.1",

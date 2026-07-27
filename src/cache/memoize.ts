@@ -11,18 +11,20 @@ type MemoizeOptions<Fn extends GenericSyncFn> = {
 export function memoize<Fn extends GenericSyncFn>(fn: Fn, options?: MemoizeOptions<Fn>): Fn {
 	type Return = ReturnType<Fn>
 
-	const cache = new Map<string, Return>()
+	const cache = new Map<unknown, Return>()
 
-	function addToCache(serializedArgs: string, value: Return) {
+	function addToCache(serializedArgs: unknown, value: Return) {
 		cache.set(serializedArgs, value)
 		if (options?.max != null && cache.size > options.max) {
-			cache.delete(cache.keys().next().value!)
+			cache.delete(cache.keys().next().value)
 		}
 	}
 
 	return ((...args) => {
 		const serializedArgs =
-			options?.serialize != null ? options.serialize(...(args as any)) : serializeUnknown(...args)
+			options?.serialize != null
+				? options.serialize(...(args as any))
+				: serializeUnknown(args.length === 1 ? args[0] : args)
 
 		if (cache.has(serializedArgs)) {
 			const cached = cache.get(serializedArgs)

@@ -1,4 +1,4 @@
-import { identify } from "object-identity"
+import { serializeUnknown } from "../util.ts"
 
 type GenericSyncFn = (...args: any) => any
 
@@ -22,7 +22,7 @@ export function memoize<Fn extends GenericSyncFn>(fn: Fn, options?: MemoizeOptio
 
 	return ((...args) => {
 		const serializedArgs =
-			options?.serialize != null ? options.serialize(...(args as any)) : identify(args)
+			options?.serialize != null ? options.serialize(...(args as any)) : serializeUnknown(...args)
 
 		if (cache.has(serializedArgs)) {
 			const cached = cache.get(serializedArgs)

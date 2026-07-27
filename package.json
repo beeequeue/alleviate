@@ -59,6 +59,7 @@
 		"@tsconfig/node26": "26.0.0",
 		"@tsconfig/strictest": "2.0.8",
 		"@types/node": "26.1.1",
+		"fnv1a-64": "0.1.1",
 		"lint-staged": "17.2.0",
 		"object-identity": "0.2.3",
 		"oxfmt": "0.60.0",
@@ -71,6 +72,7 @@
 		"vitest": "5.0.0-beta.6"
 	},
 	"inlinedDependencies": {
+		"fnv1a-64": "0.1.1",
 		"object-identity": "0.2.3"
 	}
 }

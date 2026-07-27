@@ -1,9 +1,9 @@
 // oxlint-disable vitest/require-mock-type-parameters
 
-import { identify } from "object-identity"
 import { describe, expect, expectTypeOf, it, vi } from "vitest"
 
 import { BatchError } from "../error.ts"
+import { serializeUnknown } from "../util.ts"
 
 import { createDataLoader } from "./dataloader.ts"
 
@@ -252,7 +252,7 @@ describe("DataLoader", () => {
 
 			await dataloader.load(1)
 			expect(customCache.size).toBe(1)
-			expect(customCache.has(identify(1))).toBe(true)
+			expect(customCache.has(serializeUnknown(1))).toBe(true)
 
 			// Second load should use cache, not call loader again
 			await dataloader.load(1)

@@ -1,6 +1,5 @@
-import { identify } from "object-identity"
-
 import { BatchError } from "../error.ts"
+import { serializeUnknown } from "../util.ts"
 
 export interface DataLoader<Key, Value> {
 	load(key: Key): Promise<Value>
@@ -20,7 +19,10 @@ export interface DataLoaderOptions<Key, Value> {
 	 * Pass a custom `Map` or set to `false` to disable automatic caching. Defaults to `true`
 	 */
 	cache?: boolean | Map<string, Value | PromiseLike<Value>>
-	/** Customize cache key serialization. */
+	/**
+	 * Customize cache key serialization.
+	 * Defaults to `fnv1a-64(object-identity(data))`
+	 */
 	cacheKeyFn?: (key: Key) => string
 	/** Whether to cache errors *returned* from the loader (not the loader fn throwing). Defaults to `true` */
 	cacheErrors?: boolean
@@ -39,7 +41,7 @@ export function createDataLoader<Key, Value>(
 ): DataLoader<Key, Value> {
 	const cacheMap: Map<string, Value | PromiseLike<Value> | Error> | null =
 		options.cache !== false ? ((options.cache !== true ? options.cache : null) ?? new Map()) : null
-	const cacheKeyFn: (key: Key) => string = options.cacheKeyFn ?? identify
+	const cacheKeyFn: (key: Key) => string = options.cacheKeyFn ?? serializeUnknown
 
 	const queue: QueueItem<Key, Value>[] = []
 	let microtaskWaiting = false

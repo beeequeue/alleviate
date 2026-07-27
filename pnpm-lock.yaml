@@ -32,6 +32,9 @@ importers:
       '@types/node':
         specifier: 26.1.1
         version: 26.1.1
+      fnv1a-64:
+        specifier: 0.1.1
+        version: 0.1.1
       lint-staged:
         specifier: 17.2.0
         version: 17.2.0
@@ -927,6 +930,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fnv1a-64@0.1.1:
+    resolution: {integrity: sha512-qMpkqWyaiNxwYG7Dt40Bxtp2wV6KW/1woXVJOEvR1KA2ffsZf8pyvlNwJgFHha3teh8iC3d4arvrJ0qTcU445A==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -1859,6 +1865,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
       picomatch: 4.0.5
+
+  fnv1a-64@0.1.1: {}
 
   fsevents@2.3.3:
     optional: true

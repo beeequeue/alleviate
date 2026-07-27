@@ -168,10 +168,10 @@ describe("DataLoader", () => {
 			const promises = [1, 2, 3, 4, 5].map((k) => dataloader.load(k))
 			const results = await Promise.all(promises)
 
-			expect(results).toEqual([2, 4, 6, 8, 10])
 			expect(loader).toHaveBeenCalledTimes(2)
 			expect(loader).toHaveBeenNthCalledWith(1, [1, 2, 3])
 			expect(loader).toHaveBeenNthCalledWith(2, [4, 5])
+			expect(results).toEqual([2, 4, 6, 8, 10])
 		})
 
 		it("processes items added mid-batch in a subsequent batch", async () => {

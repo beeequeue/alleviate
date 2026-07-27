@@ -40,24 +40,26 @@ type QueueItem<Key, Value> = {
 export function createDataLoader<Key, Value>(
 	options: DataLoaderOptions<Key, Value>,
 ): DataLoader<Key, Value> {
-	const cacheMap: Map<string, PromiseLike<Value | Error>> | null =
+	const cacheMap: Map<string, Promise<Value> | Error> | null =
 		options.cache !== false ? ((options.cache !== true ? options.cache : null) ?? new Map()) : null
 	const cacheKeyFn: (key: Key) => string = options.cacheKeyFn ?? serializeUnknown
 
-	const queue: QueueItem<Key, Value>[] = []
+	let queue: QueueItem<Key, Value>[] = []
 	let microtaskWaiting = false
 
 	const load: DataLoader<Key, Value>["load"] = (key): Promise<Value> => {
 		const cacheKey = cacheKeyFn(key)
 		if (cacheMap?.has(cacheKey)) {
-			return cacheMap.get(cacheKey) as Promise<Value>
+			const value = cacheMap.get(cacheKey)!
+
+			return value instanceof Error ? Promise.reject(value) : value
 		}
 
 		const { promise, resolve, reject } = Promise.withResolvers<Value>()
 
 		if (!microtaskWaiting) {
-			queueMicrotask(executeBatch)
 			microtaskWaiting = true
+			queueMicrotask(dispatch)
 		}
 		queue.push({ key, cacheKey, resolve, reject })
 		cacheMap?.set(cacheKey, promise)
@@ -74,40 +76,62 @@ export function createDataLoader<Key, Value>(
 			),
 		)
 
-	async function executeBatch() {
+	function dispatch(): void {
 		microtaskWaiting = false
-		const batch = queue.splice(0, options.maxBatchSize ?? queue.length)
+
+		// Swap arrays instead of repeatedly shifting/splicing the shared queue.
+		const items = queue
+		queue = []
+
+		if (items.length === 0) return
+
+		if (options.maxBatchSize == null) {
+			void executeBatch(items, 0, items.length)
+			return
+		}
+
+		// Start every chunk without awaiting the preceding chunk.
+		for (let start = 0; start < items.length; start += options.maxBatchSize) {
+			const end = Math.min(start + options.maxBatchSize, items.length)
+			void executeBatch(items, start, end)
+		}
+	}
+
+	async function executeBatch(items: QueueItem<Key, Value>[], start: number, end: number) {
+		microtaskWaiting = false
+
+		const length = end - start
+		// oxlint-disable-next-line unicorn/no-new-array
+		const keys = new Array<Key>(length)
+		for (let i = 0; i < length; i++) {
+			keys[i] = items[start + i]!.key
+		}
 
 		try {
-			const results = await options.loader(batch.map(({ key }) => key))
+			const results = await options.loader(keys)
 
-			for (let i = 0; i < batch.length; i++) {
+			for (let i = 0; i < length; i++) {
 				const result = results[i]!
+				const queueItem = items[i + start]!
 
 				if (result instanceof Error) {
 					if (options.cacheErrors !== false) {
-						cacheMap?.set(batch[i]!.cacheKey, Promise.reject(result))
+						cacheMap?.set(queueItem.cacheKey, result)
 					} else {
-						cacheMap?.delete(batch[i]!.cacheKey)
+						cacheMap?.delete(queueItem.cacheKey)
 					}
 
-					batch[i]!.reject(result)
+					queueItem.reject(result)
 				} else {
-					cacheMap?.set(batch[i]!.cacheKey, Promise.resolve(result))
-					batch[i]!.resolve(result)
+					cacheMap?.set(queueItem.cacheKey, Promise.resolve(result))
+					queueItem.resolve(result)
 				}
 			}
 		} catch (error) {
 			const batchError = new BatchError(error as Error)
-			for (let i = 0; i < batch.length; i++) {
-				batch[i]!.reject(batchError)
+			for (let i = 0; i < items.length; i++) {
+				items[i + start]!.reject(batchError)
 			}
-		}
-
-		// oxlint-disable-next-line typescript/no-unnecessary-condition
-		if (!microtaskWaiting && queue.length !== 0) {
-			queueMicrotask(executeBatch)
-			microtaskWaiting = true
 		}
 	}
 

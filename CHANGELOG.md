@@ -1,5 +1,11 @@
 # alleviate
 
+## 0.2.2
+
+### Patch Changes
+
+- [`3ada5fa`](https://github.com/beeequeue/alleviate/commit/3ada5fafe020340348a47e1adaa112d9d48a247d) Thanks [@beeequeue](https://github.com/beeequeue)! - `memoize` and `DataLoader` now uses `fnv1a-64` for hashing in their serializer functions
+
 ## 0.2.1
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # alleviate
 
+## 0.2.3
+
+### Patch Changes
+
+- [#9](https://github.com/beeequeue/alleviate/pull/9) [`a673034`](https://github.com/beeequeue/alleviate/commit/a673034ae414a2c9f9bb40f5a20ec5b2055b75b0) Thanks [@beeequeue](https://github.com/beeequeue)! - Removed `fnva1-64` again as it killed performance
+
+- [#9](https://github.com/beeequeue/alleviate/pull/9) [`a673034`](https://github.com/beeequeue/alleviate/commit/a673034ae414a2c9f9bb40f5a20ec5b2055b75b0) Thanks [@beeequeue](https://github.com/beeequeue)! - Optimized `memoize` and `DataLoader` performance.
+
 ## 0.2.2
 
 ### Patch Changes

@@ -30,11 +30,10 @@ export interface DataLoaderOptions<Key, Value> {
 	maxBatchSize?: number
 }
 
-type QueueItem<Key, Value> = {
-	key: Key
-	cacheKey: string
+type Resolver<Value> = {
+	promise: Promise<Value>
 	resolve: (value: Value) => void
-	reject: (reason?: Error) => void
+	reject: (reason?: unknown) => void
 }
 
 export function createDataLoader<Key, Value>(
@@ -44,27 +43,36 @@ export function createDataLoader<Key, Value>(
 		options.cache !== false ? ((options.cache !== true ? options.cache : null) ?? new Map()) : null
 	const cacheKeyFn: (key: Key) => string = options.cacheKeyFn ?? serializeUnknown
 
-	let queue: QueueItem<Key, Value>[] = []
+	const loader = options.loader
+	const maxBatchSize = options.maxBatchSize ?? Infinity
+	const cacheErrors = options.cacheErrors !== false
+	const bounded = maxBatchSize !== Infinity
+
+	let queueKeys: Key[] = []
+	let queueCacheKeys: string[] = []
+	let queueResolvers: Resolver<Value>[] = []
 	let microtaskWaiting = false
 
 	const load: DataLoader<Key, Value>["load"] = (key): Promise<Value> => {
 		const cacheKey = cacheKeyFn(key)
-		if (cacheMap?.has(cacheKey)) {
-			const value = cacheMap.get(cacheKey)!
-
-			return value instanceof Error ? Promise.reject(value) : value
+		const cached = cacheMap?.get(cacheKey)
+		if (cached !== undefined) {
+			return cached instanceof Error ? Promise.reject(cached) : cached
 		}
 
-		const { promise, resolve, reject } = Promise.withResolvers<Value>()
+		const resolver = Promise.withResolvers<Value>() as Resolver<Value>
 
 		if (!microtaskWaiting) {
 			microtaskWaiting = true
 			queueMicrotask(dispatch)
 		}
-		queue.push({ key, cacheKey, resolve, reject })
-		cacheMap?.set(cacheKey, promise)
 
-		return promise
+		queueKeys.push(key)
+		queueCacheKeys.push(cacheKey)
+		queueResolvers.push(resolver)
+		cacheMap?.set(cacheKey, resolver.promise)
+
+		return resolver.promise
 	}
 
 	const loadMany: DataLoader<Key, Value>["loadMany"] = async (keys) =>
@@ -79,60 +87,66 @@ export function createDataLoader<Key, Value>(
 	function dispatch(): void {
 		microtaskWaiting = false
 
-		// Swap arrays instead of repeatedly shifting/splicing the shared queue.
-		const items = queue
-		queue = []
+		// Swap so items enqueued during dispatch start a fresh batch.
+		const keys = queueKeys
+		const cacheKeys = queueCacheKeys
+		const resolvers = queueResolvers
+		queueKeys = []
+		queueCacheKeys = []
+		queueResolvers = []
 
-		if (items.length === 0) return
+		const length = resolvers.length
+		if (length === 0) return
 
-		if (options.maxBatchSize == null) {
-			void executeBatch(items, 0, items.length)
+		if (!bounded) {
+			executeBatch(keys, cacheKeys, resolvers, 0, length, true)
 			return
 		}
 
-		// Start every chunk without awaiting the preceding chunk.
-		for (let start = 0; start < items.length; start += options.maxBatchSize) {
-			const end = Math.min(start + options.maxBatchSize, items.length)
-			void executeBatch(items, start, end)
+		for (let start = 0; start < length; start += maxBatchSize) {
+			const end = Math.min(start + maxBatchSize, length)
+			// Only the first chunk (start === 0) coincides with the head of `keys`,
+			// so it could be passed zero-copy — but for bounded loads that single batch
+			// almost never covers the whole queue, so just always slice for simplicity.
+			executeBatch(keys, cacheKeys, resolvers, start, end, false)
 		}
 	}
 
-	async function executeBatch(items: QueueItem<Key, Value>[], start: number, end: number) {
-		microtaskWaiting = false
-
+	function executeBatch(
+		keysArr: Key[],
+		cacheKeysArr: string[],
+		resolversArr: Resolver<Value>[],
+		start: number,
+		end: number,
+		zeroCopy: boolean,
+	): void {
 		const length = end - start
-		// oxlint-disable-next-line unicorn/no-new-array
-		const keys = new Array<Key>(length)
-		for (let i = 0; i < length; i++) {
-			keys[i] = items[start + i]!.key
-		}
 
-		try {
-			const results = await options.loader(keys)
+		// Pass keys directly to the loader when the batch covers the whole array.
+		const keys = zeroCopy ? keysArr : keysArr.slice(start, end)
 
-			for (let i = 0; i < length; i++) {
-				const result = results[i]!
-				const queueItem = items[i + start]!
-
-				if (result instanceof Error) {
-					if (options.cacheErrors !== false) {
-						cacheMap?.set(queueItem.cacheKey, result)
+		loader(keys).then(
+			(results) => {
+				for (let i = 0; i < length; i++) {
+					const result = results[i]!
+					const resolver = resolversArr[start + i]!
+					if (result instanceof Error) {
+						if (!cacheErrors) cacheMap?.delete(cacheKeysArr[start + i]!)
+						resolver.reject(result)
 					} else {
-						cacheMap?.delete(queueItem.cacheKey)
+						resolver.resolve(result)
 					}
-
-					queueItem.reject(result)
-				} else {
-					cacheMap?.set(queueItem.cacheKey, Promise.resolve(result))
-					queueItem.resolve(result)
 				}
-			}
-		} catch (error) {
-			const batchError = new BatchError(error as Error)
-			for (let i = 0; i < items.length; i++) {
-				items[i + start]!.reject(batchError)
-			}
-		}
+			},
+			(error: unknown) => {
+				const batchError = new BatchError(error as Error)
+				for (let i = 0; i < length; i++) {
+					const ri = start + i
+					cacheMap?.delete(cacheKeysArr[ri]!)
+					resolversArr[ri]!.reject(batchError)
+				}
+			},
+		)
 	}
 
 	return {

@@ -74,7 +74,7 @@
 		"simple-git-hooks": "2.13.1",
 		"tsdown": "0.22.14",
 		"typescript": "7.0.2",
-		"vitest": "5.0.0-beta.6"
+		"vitest": "4.1.10"
 	},
 	"inlinedDependencies": {
 		"fnv1a-64": "0.1.1",

@@ -57,7 +57,7 @@
 		"@changesets/changelog-github": "1.0.0-next.8",
 		"@changesets/cli": "3.0.0-next.10",
 		"@codspeed/vitest-plugin": "5.7.1",
-		"@e18e/eslint-plugin": "0.5.1",
+		"@e18e/eslint-plugin": "0.6.0",
 		"@formatjs/fast-memoize": "3.1.7",
 		"@tsconfig/node26": "26.0.0",
 		"@tsconfig/strictest": "2.0.8",

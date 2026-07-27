@@ -1,7 +1,7 @@
 import path from "node:path"
 
 import { defineConfig } from "tsdown"
-import { type NodeProtocolPlugin } from "tsdown/plugins"
+import type { NodeProtocolPlugin } from "tsdown/plugins"
 
 export const vendoredPathsPlugin = () =>
 	({

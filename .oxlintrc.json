@@ -32,7 +32,7 @@
 		"nursery": "warn"
 	},
 	"rules": {
-		"import/consistent-type-specifier-style": ["error", "prefer-inline"],
+		"import/consistent-type-specifier-style": ["error", "prefer-top-level-if-only-type-imports"],
 		"typescript/consistent-type-imports": [
 			"error",
 			{ "fixStyle": "inline-type-imports", "disallowTypeAnnotations": false }

@@ -27,14 +27,14 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
           cache: false
       - run: pnpm install --frozen-lockfile
 
       - name: Select mode
         id: select-mode
-        uses: changesets/action/select-mode@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
+        uses: changesets/action/select-mode@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
 
   version:
     needs: select-mode
@@ -51,14 +51,14 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
           cache: false
       - run: pnpm install --frozen-lockfile
       - name: Create or update release pull request
         id: changesets
         # https://github.com/changesets/action
-        uses: changesets/action/version@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
+        uses: changesets/action/version@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
 
   pack:
     needs: select-mode
@@ -76,7 +76,7 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
           cache: false
       - run: pnpm install --frozen-lockfile
@@ -86,7 +86,7 @@ jobs:
 
       - name: Pack
         id: pack
-        uses: changesets/action/pack@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
+        uses: changesets/action/pack@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
         with:
           publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
 
@@ -107,12 +107,12 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
           cache: false
       - run: pnpm install --frozen-lockfile
       - name: Publish to npm
-        uses: changesets/action/publish@c47fa68bd43bb8ae0bae7e558622593deebf5955 # v2.0.0-next.3
+        uses: changesets/action/publish@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
         with:
           pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
           # script: pnpm stage publish

@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   select-mode:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       mode: ${{ steps.select-mode.outputs.mode }}
       publish-plan-artifact-id: ${{ steps.select-mode.outputs.publish-plan-artifact-id }}
@@ -39,7 +39,7 @@ jobs:
   version:
     needs: select-mode
     if: needs.select-mode.outputs.mode == 'version'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     environment: version
     permissions:
       contents: write # to check out repo
@@ -63,7 +63,7 @@ jobs:
   pack:
     needs: select-mode
     if: needs.select-mode.outputs.mode == 'publish'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       pack-dir-artifact-id: ${{ steps.pack.outputs.pack-dir-artifact-id }}
     permissions:
@@ -92,7 +92,7 @@ jobs:
 
   publish:
     needs: pack
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     environment: npm
     timeout-minutes: 20
     permissions:

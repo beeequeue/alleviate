@@ -4,6 +4,8 @@ allowBuilds:
 dedupePeers: true
 dedupePeerDependents: true
 
+enableGlobalVirtualStore: true
+
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - "@changesets/*"
@@ -11,7 +13,7 @@ minimumReleaseAgeExclude:
 overrides:
   lightningcss: "-"
   postcss: "-"
-  rolldown: 1.2.3
+  rolldown: 1.2.4
   vite: "^8"
 
 savePrefix: ""

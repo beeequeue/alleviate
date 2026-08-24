@@ -19,7 +19,7 @@
 	},
 	"version": "0.2.3",
 	"type": "module",
-	"packageManager": "pnpm@11.17.0",
+	"packageManager": "pnpm@11.23.0",
 	"engines": {
 		"node": "^22.11 || ^24 || ^26 || ^27"
 	},
@@ -55,11 +55,11 @@
 	},
 	"devDependencies": {
 		"@changesets/changelog-github": "1.0.0",
-		"@changesets/cli": "3.0.0",
+		"@changesets/cli": "3.0.1",
 		"@codspeed/vitest-plugin": "5.7.1",
 		"@e18e/eslint-plugin": "0.8.0",
 		"@formatjs/fast-memoize": "3.1.7",
-		"@tsconfig/node26": "26.0.0",
+		"@tsconfig/node26": "26.0.1",
 		"@tsconfig/strictest": "2.0.8",
 		"@types/lodash.memoize": "4.1.9",
 		"@types/node": "26.2.0",
@@ -71,15 +71,15 @@
 		"memoize": "11.0.0",
 		"memoize-one": "6.0.0",
 		"object-identity": "0.2.3",
-		"oxfmt": "0.62.0",
-		"oxlint": "1.77.0",
+		"oxfmt": "0.64.0",
+		"oxlint": "1.79.0",
 		"oxlint-tsgolint": "7.0.2001",
 		"p-queue": "9.3.3",
-		"publint": "0.3.23",
+		"publint": "0.3.24",
 		"simple-git-hooks": "2.13.1",
 		"tsdown": "0.22.14",
 		"typescript": "7.0.2",
-		"vitest": "4.1.10"
+		"vitest": "4.1.11"
 	},
 	"inlinedDependencies": {
 		"object-identity": "0.2.3"

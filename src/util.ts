@@ -2,8 +2,8 @@ import { identify } from "object-identity"
 
 import { TimeoutError } from "./error.ts"
 
-export function serializeUnknown(value: unknown): unknown {
-	return typeof value === "object" && value != null ? identify(value) : value
+export function serializeUnknown(...args: unknown[]): string {
+	return identify(args)
 }
 
 export function timeoutPromise(ms: number): { cancel: () => void; promise: Promise<never> } {

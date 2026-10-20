@@ -17,8 +17,10 @@ export interface DataLoaderOptions<Key, Value, CacheKey = Key> {
 	loader: (key: Key[]) => Promise<Array<Value | Error>>
 	/**
 	 * Pass a custom `Map` or set to `false` to disable automatic caching. Defaults to `true`
+	 *
+	 * `Error`s returned by the loader are only stored when `cacheErrors` is enabled.
 	 */
-	cache?: boolean | Map<CacheKey, Value | PromiseLike<Value>>
+	cache?: boolean | Map<CacheKey, Value | PromiseLike<Value> | Error>
 	/**
 	 * Customize cache key serialization.
 	 * Defaults to structural identity for objects and direct identity for primitives.
@@ -26,7 +28,7 @@ export interface DataLoaderOptions<Key, Value, CacheKey = Key> {
 	cacheKeyFn?: (key: Key) => CacheKey
 	/** Whether to cache errors *returned* from the loader (not the loader fn throwing). Defaults to `true` */
 	cacheErrors?: boolean
-	/** Max size of batch before splitting up calls to the loader. Defaults to infinite */
+	/** Max size of a batch before splitting up calls to the loader. Defaults to infinite */
 	maxBatchSize?: number
 }
 
@@ -38,6 +40,10 @@ type Callback<Value> = {
 export function createDataLoader<Key, Value, CacheKey = Key>(
 	options: DataLoaderOptions<Key, Value, CacheKey>,
 ): DataLoader<Key, Value> {
+	if (options.maxBatchSize != null && options.maxBatchSize < 1) {
+		throw new RangeError(`maxBatchSize must be at least 1, received ${options.maxBatchSize}`)
+	}
+
 	const cacheMap: Map<CacheKey, Value | PromiseLike<Value> | Error> | null =
 		options.cache !== false ? ((options.cache !== true ? options.cache : null) ?? new Map()) : null
 	const { cacheKeyFn } = options
@@ -46,6 +52,9 @@ export function createDataLoader<Key, Value, CacheKey = Key>(
 	let queuedKeys: Key[] = []
 	let queuedCallbacks: Callback<Value>[] = []
 	let microtaskWaiting = false
+
+	/** Promises for keys queued for the upcoming batch, deduplicating loads regardless of caching. */
+	const pending = new Map<CacheKey, Promise<Value>>()
 
 	const getCacheKey = (key: Key): CacheKey =>
 		cacheKeyFn == null ? (serializeUnknown(key) as CacheKey) : cacheKeyFn(key)
@@ -57,10 +66,14 @@ export function createDataLoader<Key, Value, CacheKey = Key>(
 			return cached instanceof Error ? Promise.reject(cached) : Promise.resolve(cached)
 		}
 
+		const pendingPromise = pending.get(cacheKey)
+		if (pendingPromise != null) return pendingPromise
+
 		queuedKeys.push(key)
 		const promise = new Promise<Value>((resolve, reject) => {
 			queuedCallbacks.push({ resolve, reject })
 		})
+		pending.set(cacheKey, promise)
 		cacheMap?.set(cacheKey, promise)
 
 		if (!microtaskWaiting) {
@@ -80,29 +93,51 @@ export function createDataLoader<Key, Value, CacheKey = Key>(
 			),
 		)
 
+	const rejectBatch = (keys: Key[], callbacks: Callback<Value>[], error: Error) => {
+		for (let i = 0; i < keys.length; i++) {
+			cacheMap?.delete(getCacheKey(keys[i]!))
+			callbacks[i]!.reject(error)
+		}
+	}
+
 	const dispatch = (keys: Key[], callbacks: Callback<Value>[]) => {
-		void loader(keys).then(
-			(results) => {
-				for (let i = 0; i < keys.length; i++) {
-					const result = results[i]!
-					if (result instanceof Error) {
-						if (!cacheErrors) cacheMap?.delete(getCacheKey(keys[i]!))
-						callbacks[i]!.reject(result)
-					} else {
-						callbacks[i]!.resolve(result)
+		// Deferred so a loader throwing synchronously is handled as a rejection
+		// instead of crashing the process from inside `queueMicrotask`.
+		void Promise.resolve()
+			.then(() => loader(keys))
+			.then(
+				(results) => {
+					if (!Array.isArray(results) || results.length !== keys.length) {
+						const received = Array.isArray(results)
+							? `an Array of length ${results.length}`
+							: typeof results
+
+						rejectBatch(
+							keys,
+							callbacks,
+							new TypeError(
+								`Batch loader must return an Array with one result per key (length ${keys.length}), received ${received}.`,
+							),
+						)
+						return null
 					}
-				}
-				return null
-			},
-			(error: unknown) => {
-				const batchError = new BatchError(error as Error)
-				for (let i = 0; i < keys.length; i++) {
-					cacheMap?.delete(getCacheKey(keys[i]!))
-					callbacks[i]!.reject(batchError)
-				}
-				return null
-			},
-		)
+
+					for (let i = 0; i < keys.length; i++) {
+						const result = results[i]!
+						if (result instanceof Error) {
+							if (!cacheErrors) cacheMap?.delete(getCacheKey(keys[i]!))
+							callbacks[i]!.reject(result)
+						} else {
+							callbacks[i]!.resolve(result)
+						}
+					}
+					return null
+				},
+				(error: unknown) => {
+					rejectBatch(keys, callbacks, new BatchError(error as Error))
+					return null
+				},
+			)
 	}
 
 	function executeBatch() {
@@ -110,6 +145,7 @@ export function createDataLoader<Key, Value, CacheKey = Key>(
 		const callbacks = queuedCallbacks
 		queuedKeys = []
 		queuedCallbacks = []
+		pending.clear()
 
 		if (maxBatchSize == null) {
 			dispatch(keys, callbacks)
@@ -133,7 +169,10 @@ export function createDataLoader<Key, Value, CacheKey = Key>(
 		load,
 		loadMany,
 		prime(key: Key, value: Value | PromiseLike<Value>) {
-			cacheMap?.set(getCacheKey(key), value)
+			const cacheKey = getCacheKey(key)
+			if (!cacheMap?.has(cacheKey)) {
+				cacheMap?.set(cacheKey, value)
+			}
 		},
 		clear(key: Key) {
 			cacheMap?.delete(getCacheKey(key))

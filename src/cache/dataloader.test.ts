@@ -254,7 +254,7 @@ describe("DataLoader", () => {
 		})
 
 		it("uses a custom cache Map when provided", async () => {
-			const customCache = new Map<number, number>()
+			const customCache = new Map<number, number | Error>()
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
 			const dataloader = createDataLoader<number, number>({
 				loader,
@@ -317,6 +317,17 @@ describe("DataLoader", () => {
 			expect(loader).not.toHaveBeenCalled()
 		})
 
+		it("does not overwrite an existing cached value", async () => {
+			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
+			const dataloader = createDataLoader<number, number>({ loader })
+
+			dataloader.prime(5, 99)
+			dataloader.prime(5, 123)
+			const result = await dataloader.load(5)
+
+			expect(result).toBe(99)
+		})
+
 		it("does nothing when caching is disabled", async () => {
 			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
 			const dataloader = createDataLoader<number, number>({
@@ -367,6 +378,89 @@ describe("DataLoader", () => {
 
 			await Promise.all([dataloader.load(1), dataloader.load(2)])
 			expect(loader).toHaveBeenCalledTimes(2)
+		})
+	})
+
+	describe("robustness", () => {
+		it("rejects instead of crashing when the loader throws synchronously", async () => {
+			const loader = vi.fn((_keys: number[]): number[] => {
+				throw new Error("sync boom")
+			})
+			const dataloader = createDataLoader<number, number>({ loader })
+
+			await expect(dataloader.load(1)).rejects.toThrow(BatchError)
+			expect(loader).toHaveBeenCalledOnce()
+		})
+
+		it("recovers after a synchronously throwing loader succeeds on retry", async () => {
+			let shouldThrow = true
+			const dataloader = createDataLoader<number, number>({
+				loader: (keys: number[]): number[] => {
+					if (shouldThrow) throw new Error("sync boom")
+					return keys.map((k) => k * 2)
+				},
+			})
+
+			await expect(dataloader.load(1)).rejects.toThrow(BatchError)
+
+			shouldThrow = false
+			expect(await dataloader.load(1)).toBe(2)
+		})
+
+		it("rejects with a TypeError when the loader returns fewer results than keys", async () => {
+			const loader = vi.fn(async (keys: number[]) => [keys[0]! * 2])
+			const dataloader = createDataLoader<number, number>({ loader })
+
+			const first = dataloader.load(1).catch((error) => error)
+			const second = dataloader.load(2).catch((error) => error)
+			const [firstError, secondError] = await Promise.all([first, second])
+
+			expect(firstError).toBeInstanceOf(TypeError)
+			expect(firstError.message).toContain("length 2")
+			expect(firstError.message).toContain("length 1")
+			expect(secondError).toBe(firstError)
+		})
+
+		it("rejects when the loader returns a non-array value", async () => {
+			const dataloader = createDataLoader<number, number>({
+				loader: async () => undefined as never,
+			})
+
+			await expect(dataloader.load(1)).rejects.toThrow(TypeError)
+		})
+
+		it("allows retrying after a malformed batch response", async () => {
+			let malformed = true
+			const loader = vi.fn(async (keys: number[]) => (malformed ? [] : keys.map((k) => k * 2)))
+			const dataloader = createDataLoader<number, number>({ loader })
+
+			await expect(dataloader.load(1)).rejects.toThrow(TypeError)
+
+			malformed = false
+			expect(await dataloader.load(1)).toBe(2)
+			expect(loader).toHaveBeenCalledTimes(2)
+		})
+
+		it("deduplicates identical keys within a batch even when caching is disabled", async () => {
+			const loader = vi.fn(async (keys: number[]) => keys.map((k) => k * 2))
+			const dataloader = createDataLoader<number, number>({ loader, cache: false })
+
+			const [a, b] = await Promise.all([dataloader.load(1), dataloader.load(1)])
+
+			expect(a).toBe(2)
+			expect(b).toBe(2)
+			expect(loader).toHaveBeenCalledOnce()
+			expect(loader).toHaveBeenCalledWith([1])
+		})
+
+		it("throws when maxBatchSize is less than 1", () => {
+			expect(() =>
+				createDataLoader<number, number>({ loader: async (keys) => keys, maxBatchSize: 0 }),
+			).toThrow(RangeError)
+
+			expect(() =>
+				createDataLoader<number, number>({ loader: async (keys) => keys, maxBatchSize: -5 }),
+			).toThrow(RangeError)
 		})
 	})
 })

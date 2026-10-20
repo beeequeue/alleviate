@@ -1,3 +1,4 @@
+export { BatchError, TimeoutError } from "./error.ts"
 export { createDataLoader, type DataLoader, type DataLoaderOptions } from "./cache/dataloader.ts"
 export { createLRU, type LRU, type LRUOptions } from "./cache/lru.ts"
 export { memoize } from "./cache/memoize.ts"

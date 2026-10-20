@@ -17,7 +17,7 @@ export const vendoredPathsPlugin = () =>
 				}
 
 				if (i.name.startsWith("node_modules")) {
-					const matches = /\.pnpm[\\/](.+?@.+?)[\\/]/.exec(modulePath)
+					const matches = /\.(?:upm|pnpm)[\\/](.+?@.+?)[\\/]/.exec(modulePath)
 					if (matches?.[1] != null) {
 						const name = matches[1].split("@")[0]!
 						const endOfPath = i.facadeModuleId!.slice(
@@ -53,11 +53,11 @@ export default defineConfig({
 
 	env: { TEST: false },
 
-	target: "baseline-widely-available",
+	target: ["baseline-widely-available", "node22.11"],
 	format: "esm",
 	platform: "neutral",
 	minify: "dce-only",
-	dts: { oxc: true },
+	dts: { generator: "oxc" },
 	unbundle: true,
 	outputOptions: {
 		comments: { jsdoc: false }, // removes jsdoc comments from JS output, keeps them in TS

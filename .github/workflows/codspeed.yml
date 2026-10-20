@@ -2,7 +2,7 @@ name: codspeed
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
     paths:
       - .github/workflows/codspeed.yml
@@ -43,6 +43,7 @@ jobs:
           key: v1-upm-${{ hashFiles('**/upm.lock') }}
           restore-keys: |
             v1-upm-
+      - run: npm i -g upm@1.4.0
       - name: Install dependencies
         run: upm install --frozen-lockfile
 

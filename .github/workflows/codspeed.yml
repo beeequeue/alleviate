@@ -52,5 +52,5 @@ jobs:
       - name: Run the benchmarks
         uses: CodSpeedHQ/action@821a40cd6c80e3cfe387caf55668287addd808da # v5.5.0
         with:
-          mode: simulation
+          mode: walltime
           run: node --run bench

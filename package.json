@@ -73,7 +73,7 @@
 		"oxfmt": "0.74.0",
 		"oxlint": "1.89.0",
 		"oxlint-tsgolint": "7.0.2004",
-		"p-queue": "9.3.3",
+		"p-queue": "9.3.5",
 		"publint": "0.3.25",
 		"simple-git-hooks": "2.14.0",
 		"tsdown": "0.23.1",
